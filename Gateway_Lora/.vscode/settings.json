@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "*.embeddedhtml": "html",
-        "wifi_manager.h": "c",
-        "wifi.h": "c",
-        "arduino.h": "c"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}
