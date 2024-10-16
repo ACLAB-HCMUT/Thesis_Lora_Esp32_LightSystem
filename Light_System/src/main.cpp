@@ -184,7 +184,7 @@ void loop()
     // unsigned long currentMillis = millis();
     // if (currentMillis - previousSensorMillis >= sensorInterval)
     // {
-    //
+
     //     previousSensorMillis = currentMillis;
     //     float humidity = 2.05;
     //     float temperature = 3.05;

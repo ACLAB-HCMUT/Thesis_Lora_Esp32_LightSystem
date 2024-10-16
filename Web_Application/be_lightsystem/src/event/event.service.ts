@@ -12,10 +12,11 @@ interface PayloadInterface {
 export class EventService {
   private device;
   constructor(private readonly IOTGateway: IOTGateway) {
+    // console.log(process.cwd());
     this.device = awsIOT.device({
-      keyPath: '../certs/private.pem.key',
-      certPath: '../certs/certificate.pem.crt',
-      caPath: '../certs/aws_cert_ca.pem',
+      keyPath: 'src/certs/private.pem.key',
+      certPath: 'src/certs/certificate.pem.crt',
+      caPath: 'src/certs/aws_cert_ca.pem',
       clientId: 'uniqueClientId123',
       host: 'ae1gu64w7wyef-ats.iot.ap-southeast-1.amazonaws.com',
     });
