@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
-import React from "react";
-const socket = io("http://localhost:3000");
+const socket = io("http://localhost:3000", {
+  reconnection: false,
+});
 
 const Dashboard = () => {
   const [message, setMessage] = useState<{
@@ -25,6 +26,20 @@ const Dashboard = () => {
     };
   }, []);
 
+  const turnOfLed = () => {
+    console.log("turn of");
+    socket.emit("subtopic", {
+      subtopic: "turnOff",
+      message: "Turn Off",
+    });
+  };
+  const turnOnLed = () => {
+    console.log("turn on");
+    socket.emit("subtopic", {
+      subtopic: "turnOn",
+      message: "Turn On",
+    });
+  };
   return (
     <div>
       <h1>Real-time IoT Data</h1>
@@ -36,6 +51,10 @@ const Dashboard = () => {
       ) : (
         <p>No data received yet...</p>
       )}
+      <div className="button-group">
+        <button onClick={turnOnLed}>Turn On</button>
+        <button onClick={turnOfLed}>Turn Off</button>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 // lib/model/MqttCredentialModel.h
 // MqttCredentialModel class definition.
 
@@ -14,13 +13,19 @@ public:
     String host;
     String clientId;
     String publishTopic;
+    String receiveTopic; // Added receiveTopic
 
-    MqttCredentialModel() : port(0), host(""), clientId(""), publishTopic("") {};
-    MqttCredentialModel(int port, String host, String clientId, String publishTopic) : port(port), host(host), clientId(clientId), publishTopic(publishTopic) {};
+    // Default constructor
+    MqttCredentialModel() : port(0), host(""), clientId(""), publishTopic(""), receiveTopic("") {}
 
+    // Parameterized constructor
+    MqttCredentialModel(int port, String host, String clientId, String publishTopic, String receiveTopic)
+        : port(port), host(host), clientId(clientId), publishTopic(publishTopic), receiveTopic(receiveTopic) {}
+
+    // Check if any field is empty
     bool isEmpty()
     {
-        return port == 0 || host == "" || clientId == "" || publishTopic == "";
+        return port == 0 || host == "" || clientId == "" || publishTopic == "" || receiveTopic == "";
     }
 };
 

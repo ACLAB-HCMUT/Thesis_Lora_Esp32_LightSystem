@@ -68,6 +68,7 @@ MqttCredentialModel ConfigService::getMqttCredential()
     int port = doc["port"];
     String clientId = doc["clientId"];
     String publishTopic = doc["publishTopic"];
+    String receiveTopic = doc["receiveTopic"];
     mqttConfigFile.close();
-    return MqttCredentialModel(port, host, clientId, publishTopic);
+    return MqttCredentialModel(port, host, clientId, publishTopic, receiveTopic);
 }

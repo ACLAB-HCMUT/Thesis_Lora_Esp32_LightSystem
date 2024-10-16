@@ -7,6 +7,7 @@
 #include "../model/PayloadModel.h"
 #include <time.h>
 #include <FastLED.h>
+#include <ArduinoJson.h>
 // setup time
 CRGB leds[5];
 void setupNTP()
@@ -43,7 +44,7 @@ String getCurrentTime()
 
 ////////////
 unsigned long previousSensorMillis = 0;
-const long sensorInterval = 10000;
+const long sensorInterval = 20000;
 char *payload;
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
@@ -51,10 +52,47 @@ MqttCredentialModel mqttCredential;
 WifiCredentialModel wifiCredential;
 CertificateCredentialModel certificateCredential;
 PayloadModel payloadModel;
+void messageReceived(char *topic, byte *payload, unsigned int length)
+{
+    Serial.print("Message arrived on topic: ");
+    Serial.println(topic);
+    Serial.print("Message: ");
+    String message;
+    for (int i = 0; i < length; i++)
+    {
+        message += (char)payload[i];
+    }
+
+    Serial.println(message);
+
+    if (String(topic) == mqttCredential.receiveTopic)
+    {
+        StaticJsonDocument<1024> doc;
+
+        DeserializationError error = deserializeJson(doc, message);
+        if (error)
+        {
+            Serial.print("Failed to parse JSON: ");
+            Serial.println(error.f_str());
+            return;
+        }
+        const char *receivedMessage = doc["action"];
+        // Routing message received from AWS to ESP32
+        if (strcmp(receivedMessage, "Turn On") == 0)
+        {
+            leds[0] = CRGB(0x00, 0xff, 0x00);
+            FastLED.show();
+        }
+        else if (strcmp(receivedMessage, "Turn Off") == 0)
+        {
+            leds[0] = CRGB(0xff, 0x00, 0x00);
+            FastLED.show();
+        }
+    }
+}
 void setup()
 {
     Serial.begin(115200);
-
     // Led
     FastLED.addLeds<NEOPIXEL, 27>(leds, 1);
     leds[0] = CRGB(0x99, 0x33, 0x00);
@@ -118,6 +156,8 @@ void setup()
         if (client.connect(mqttCredential.clientId.c_str()))
         {
             Serial.println("Connected to AWS IoT");
+            client.subscribe(mqttCredential.receiveTopic.c_str());
+            Serial.println("Subscribed to receive topic: " + mqttCredential.receiveTopic);
         }
         else
         {
@@ -134,26 +174,31 @@ void setup()
 
     // Get Current Time
     setupNTP();
+
+    // Set callback from subscribe topic
+    client.setCallback(messageReceived);
 }
 void loop()
 {
 
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousSensorMillis >= sensorInterval)
-    {
-        digitalWrite(LED_PIN, HIGH);
-        previousSensorMillis = currentMillis;
-        float humidity = 2.05;
-        float temperature = 3.05;
-        String currentTime = getCurrentTime();
-        // float humidity = dht.readHumidity();
-        // float temperature = dht.readTemperature();
-        payloadModel.setHumidity(humidity, !isnan(humidity));
-        payloadModel.setTemperature(temperature, !isnan(temperature));
-        payloadModel.setTimeStamp(currentTime, true);
-        payload = payloadModel.toJson();
-        Serial.println("Publish message: ");
-        Serial.println(payload);
-        client.publish(mqttCredential.publishTopic.c_str(), payload);
-    }
+    // unsigned long currentMillis = millis();
+    // if (currentMillis - previousSensorMillis >= sensorInterval)
+    // {
+    //
+    //     previousSensorMillis = currentMillis;
+    //     float humidity = 2.05;
+    //     float temperature = 3.05;
+    //     String currentTime = getCurrentTime();
+    //     // float humidity = dht.readHumidity();
+    //     // float temperature = dht.readTemperature();
+    //     payloadModel.setHumidity(humidity, !isnan(humidity));
+    //     payloadModel.setTemperature(temperature, !isnan(temperature));
+    //     payloadModel.setTimeStamp(currentTime, true);
+    //     payload = payloadModel.toJson();
+    //     Serial.println("Publish message: ");
+    //     Serial.println(payload);
+    //     client.publish(mqttCredential.publishTopic.c_str(), payload);
+    // }
+    // receive message
+    client.loop();
 }
