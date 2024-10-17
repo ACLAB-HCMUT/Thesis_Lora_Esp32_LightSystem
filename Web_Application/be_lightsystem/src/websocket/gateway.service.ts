@@ -1,14 +1,12 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, OnModuleInit } from '@nestjs/common';
 import {
   MessageBody,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-// import { EventService } from '../event/event.service';
-// import { EventService } from 'src/event/event.service';
+import { EventService } from '../event/event.service';
 // Have to enable cors for FE connection to WebSocket
 @WebSocketGateway({
   cors: {
@@ -17,14 +15,18 @@ import { Server, Socket } from 'socket.io';
     credentials: true,
   },
 })
-// @Injectable()
-export class IOTGateway implements OnModuleInit {
+export class IOTGatewayService implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 
   // To keep track of connected clients
   private clients: Set<Socket> = new Set();
-  // constructor(private readonly eventService: EventService) {}
+  constructor(
+    @Inject(forwardRef(() => EventService))
+    private readonly eventService: EventService,
+  ) {
+    console.log('IOTGatewayService initialized');
+  }
   onModuleInit() {
     this.server.on('connection', (socket) => {
       console.log('socket ID', socket.id);

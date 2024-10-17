@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { EventService } from './event.service';
-import { IOTGateway } from 'src/websocket/gateway';
-
+import { IOTGatewayModule } from 'src/websocket/gateway.module';
 @Module({
-  providers: [EventService, IOTGateway],
+  // imports: [forwardRef(() => IOTGatewayModule)],
+  imports: [forwardRef(() => IOTGatewayModule)],
+  providers: [EventService],
   exports: [EventService],
 })
 export class EventModule {}

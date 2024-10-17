@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as awsIOT from 'aws-iot-device-sdk';
-import { IOTGateway } from 'src/websocket/gateway';
+import { IOTGatewayService } from 'src/websocket/gateway.service';
 
 interface PayloadInterface {
   clientId: string;
@@ -11,7 +11,10 @@ interface PayloadInterface {
 @Injectable()
 export class EventService {
   private device;
-  constructor(private readonly IOTGateway: IOTGateway) {
+  constructor(
+    @Inject(forwardRef(() => IOTGatewayService))
+    private readonly IOTGateway: IOTGatewayService,
+  ) {
     // console.log(process.cwd());
     this.device = awsIOT.device({
       keyPath: 'src/certs/private.pem.key',
