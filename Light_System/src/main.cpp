@@ -54,6 +54,7 @@ CertificateCredentialModel certificateCredential;
 PayloadModel payloadModel;
 void messageReceived(char *topic, byte *payload, unsigned int length)
 {
+    Serial.println("Callback triggered!");
     Serial.print("Message arrived on topic: ");
     Serial.println(topic);
     Serial.print("Message: ");
@@ -63,27 +64,16 @@ void messageReceived(char *topic, byte *payload, unsigned int length)
         message += (char)payload[i];
     }
 
-    Serial.println(message);
+    Serial.println("Message content: " + message);
 
     if (String(topic) == mqttCredential.receiveTopic)
     {
-        StaticJsonDocument<1024> doc;
-
-        DeserializationError error = deserializeJson(doc, message);
-        if (error)
-        {
-            Serial.print("Failed to parse JSON: ");
-            Serial.println(error.f_str());
-            return;
-        }
-        const char *receivedMessage = doc["action"];
-        // Routing message received from AWS to ESP32
-        if (strcmp(receivedMessage, "Turn On") == 0)
+        if (message == "Turn On")
         {
             leds[0] = CRGB(0x00, 0xff, 0x00);
             FastLED.show();
         }
-        else if (strcmp(receivedMessage, "Turn Off") == 0)
+        else if (message == "Turn Off")
         {
             leds[0] = CRGB(0xff, 0x00, 0x00);
             FastLED.show();
@@ -178,27 +168,54 @@ void setup()
     // Set callback from subscribe topic
     client.setCallback(messageReceived);
 }
+void reconnect()
+{
+    // Attempt to connect until successful
+    while (!client.connected())
+    {
+        Serial.println("Connecting to AWS IoT...");
+        if (client.connect(mqttCredential.clientId.c_str()))
+        {
+            Serial.println("Connected to AWS IoT");
+            // Subscribe only if successfully connected
+            client.subscribe(mqttCredential.receiveTopic.c_str());
+            Serial.println("Subscribed to receive topic: " + mqttCredential.receiveTopic);
+        }
+        else
+        {
+            Serial.print("Failed to connect, rc=");
+            Serial.print(client.state());
+            Serial.println(" try again in 5 seconds");
+            delay(5000);
+        }
+    }
+}
 void loop()
 {
 
-    // unsigned long currentMillis = millis();
-    // if (currentMillis - previousSensorMillis >= sensorInterval)
-    // {
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousSensorMillis >= sensorInterval)
+    {
 
-    //     previousSensorMillis = currentMillis;
-    //     float humidity = 2.05;
-    //     float temperature = 3.05;
-    //     String currentTime = getCurrentTime();
-    //     // float humidity = dht.readHumidity();
-    //     // float temperature = dht.readTemperature();
-    //     payloadModel.setHumidity(humidity, !isnan(humidity));
-    //     payloadModel.setTemperature(temperature, !isnan(temperature));
-    //     payloadModel.setTimeStamp(currentTime, true);
-    //     payload = payloadModel.toJson();
-    //     Serial.println("Publish message: ");
-    //     Serial.println(payload);
-    //     client.publish(mqttCredential.publishTopic.c_str(), payload);
-    // }
+        previousSensorMillis = currentMillis;
+        float humidity = 2.05;
+        float temperature = 3.05;
+        String currentTime = getCurrentTime();
+        // float humidity = dht.readHumidity();
+        // float temperature = dht.readTemperature();
+        payloadModel.setHumidity(humidity, !isnan(humidity));
+        payloadModel.setTemperature(temperature, !isnan(temperature));
+        payloadModel.setTimeStamp(currentTime, true);
+        payload = payloadModel.toJson();
+        Serial.println("Publish message: ");
+        Serial.println(payload);
+        client.publish(mqttCredential.publishTopic.c_str(), payload);
+    }
     // receive message
+    if (!client.connected())
+    {
+        Serial.println("MQTT client disconnected. Attempting to reconnect...");
+        reconnect();
+    }
     client.loop();
 }

@@ -40,27 +40,38 @@ export class IOTGatewayService implements OnModuleInit {
     });
   }
 
-  // Handle message from Socket and publish to AWS IOT
   @SubscribeMessage('subtopic')
-  handleEvent(
+  async handleEvent(
     @MessageBody() data: { subtopic: string; message: string },
-  ): string {
+  ): Promise<string> {
     switch (data.subtopic) {
       case 'turnOn':
         console.log('turnOn Led');
         console.log(data.message);
-        // this.eventService.publishToMQTT(
-        //   'esp32_thing/light_sensor',
-        //   data.message,
-        // );
+        try {
+          await this.eventService.publishToMQTT(
+            'esp32_thing/light',
+            data.message,
+          );
+        } catch (error) {
+          console.log('Error in handleEvent:', error);
+        }
         break;
       case 'turnOff':
         console.log('turnOff Led');
+        console.log(data.message);
+        try {
+          await this.eventService.publishToMQTT(
+            'esp32_thing/light',
+            data.message,
+          );
+        } catch (error) {
+          console.log('Error in handleEvent:', error);
+        }
         break;
       default:
         break;
     }
-    // console.log(data);
     return data.message;
   }
 

@@ -8,6 +8,7 @@ interface PayloadInterface {
   temperature: number;
   timestamp: string;
 }
+
 @Injectable()
 export class EventService {
   private device;
@@ -20,7 +21,7 @@ export class EventService {
       keyPath: 'src/certs/private.pem.key',
       certPath: 'src/certs/certificate.pem.crt',
       caPath: 'src/certs/aws_cert_ca.pem',
-      clientId: 'uniqueClientId123',
+      clientId: 'NestJS_Client',
       host: 'ae1gu64w7wyef-ats.iot.ap-southeast-1.amazonaws.com',
     });
     this.device.on('connect', () => {
@@ -40,13 +41,28 @@ export class EventService {
       IOTGateway.sendIOTData('test', message, 'message');
     });
   }
-  publishToMQTT(topic: string, message: string) {
-    this.device.publish(topic, message, (err: string) => {
-      if (err) {
-        console.log('Error publishing to MQTT', err);
-      } else {
-        console.log(`Message published to topic ${topic}`);
-      }
+  // publishToMQTT(topic: string, message: string) {
+  //   console.log('Calling publishToMQTT');
+  //   this.device.publish(topic, message, (err: string) => {
+  //     if (err) {
+  //       console.log('Error publishing to MQTT', err);
+  //     } else {
+  //       console.log(`Message published to topic ${topic}`);
+  //     }
+  //   });
+  // }
+  async publishToMQTT(topic: string, message: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('Here');
+      this.device.publish(topic, message, (err: string) => {
+        if (err) {
+          console.log('Error publishing to MQTT', err);
+          return reject(err);
+        } else {
+          console.log(`Message published to topic ${topic}`);
+          resolve();
+        }
+      });
     });
   }
 }
