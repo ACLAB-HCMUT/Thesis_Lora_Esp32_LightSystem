@@ -1,5 +1,5 @@
 import time
-import led
+from LedRGB import led
 
 # Setup all neccesary objects
 counter = 0
