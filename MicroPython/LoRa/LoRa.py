@@ -53,6 +53,23 @@ class LoRa(object):
             print(f"Send message: {msg}")
         self.UART_1.write(binascii.unhexlify(msg))
     
+    def send_msg_to(self, data, address='0000', channel=0):
+        # Create first 3 bytes for header
+        if channel < 0 or channel > 80:
+            channel = 0
+        header = address + int2hex(channel)
+        # Create fully package to send via LoRa
+        package = binascii.unhexlify(header) + binascii.unhexlify(binascii.hexlify(data))   # So fucking dirty
+        package = binascii.hexlify(package)
+        # Send package
+        self.send_msg(package)
+    
+    def read_reg(self, address='00', length='01'):
+        if not self.is_config_mode:
+            return
+        cmd = self.READ_CMD + address + length
+        self.send_msg(cmd)
+        
     def set_address(self, address:str):
         if not self.is_config_mode:
             return
@@ -192,8 +209,7 @@ class LoRa(object):
         cmd = self.SETTING_CMD + self.REG_3 + '01' + value
         self.send_msg(cmd)
     
-    def send_msg_to(data:str, address='0000', baudrate=9600, channel=0):
-        pass
+
     
 def is_hexa(code:str):
     try:

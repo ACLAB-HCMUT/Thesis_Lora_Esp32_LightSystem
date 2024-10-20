@@ -8,8 +8,9 @@ def main():
     
     lora = LoRa.LoRa()
     print("Hello from LoRa")
-    lora.enable_config_mode()
-    lora.set_reg0()
+    # lora.enable_config_mode()
+    # lora.set_reg0()
+    lora.send_msg_to('hello world')
     while True:
         time.sleep(1)
 
