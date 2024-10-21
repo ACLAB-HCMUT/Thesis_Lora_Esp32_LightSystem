@@ -1,24 +1,41 @@
 import time
-import led
+from LedRGB import led
+from LoRa import LoRa
+from machine import Timer
 
 # Setup all neccesary objects
-counter = 0
+state = 0
 led.init()
+lora = LoRa.LoRa()
+timer_0 = Timer(0)
+timer_0.init(freq=10, mode=Timer.PERIODIC, callback=LoRa.uart_callback)
+
+def FSM_LedRGB(state):
+    if state == 0:
+        led.red()
+    elif state == 1:
+        led.blue()
+    elif state == 2:
+        led.yellow()
+    elif state == 3:
+        led.purple()
+    elif state == 4:
+        led.cyan()
+    elif state == 5:
+        led.green()
+    else:
+        print("Wrong state")
 
 def loop():
-    global counter
+    global state, lora
+    lora.enable_config_mode()
     while True:
-        # turn on red led within 3 seconds and switch to blue within 3 seconds
-        if counter < 3:
-            led.red()
-        elif counter < 6:
-            led.blue()
-        else:
-            counter = -1
-        counter += 1
+        state = (state + 1) % 6
+        FSM_LedRGB(state)
+        if state == 1:
+            lora.set_reg3(Transparent=False)
         time.sleep(1)
         
-
 def main():
     print("Hello from ATOM Lite")
     loop()
