@@ -174,7 +174,7 @@ class LoRa(object):
             return
         # Convert to hexa string
         channel = int2hex(channel)
-        cmd = self.SETTING_CMD + self.REG_2 + '02' + channel
+        cmd = self.SETTING_CMD + self.REG_2 + '01' + channel
         self.send_msg(cmd)
 
     def set_reg3(self, RSSI_byte=False, Transparent=True, LBT=False, WOR_cycle=500):
