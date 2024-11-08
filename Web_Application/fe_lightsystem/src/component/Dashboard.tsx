@@ -1,9 +1,16 @@
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
+import axiosConfig from "../config/axiosConfig";
 const socket = io("http://localhost:3000", {
   reconnection: false,
 });
 
+// {
+//   "light_sensor_value": "80",
+//   "status": false,
+//   "deviceID": 3,
+//   "timestamp": "2024-10-10T14:58:27+0700"
+// }
 const Dashboard = () => {
   const [message, setMessage] = useState<{
     topic: string;
@@ -26,19 +33,21 @@ const Dashboard = () => {
     };
   }, []);
 
-  const turnOfLed = () => {
-    console.log("turn of");
-    socket.emit("subtopic", {
-      subtopic: "turnOff",
-      message: "Turn Off",
-    });
+  const turnOfLed = async () => {
+    // console.log("turn of");
+    // socket.emit("subtopic", {
+    //   subtopic: "turnOff",
+    //   message: "Turn Off",
+    // });
+    await axiosConfig.post("/light/turnOff");
   };
-  const turnOnLed = () => {
-    console.log("turn on");
-    socket.emit("subtopic", {
-      subtopic: "turnOn",
-      message: "Turn On",
-    });
+  const turnOnLed = async () => {
+    // console.log("turn on");
+    // socket.emit("subtopic", {
+    //   subtopic: "turnOn",
+    //   message: "Turn On",
+    // });
+    await axiosConfig.post("/light/turnOn");
   };
   return (
     <div>

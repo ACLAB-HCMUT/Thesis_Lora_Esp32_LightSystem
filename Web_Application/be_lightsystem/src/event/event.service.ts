@@ -16,7 +16,6 @@ export class EventService {
     @Inject(forwardRef(() => IOTGatewayService))
     private readonly IOTGateway: IOTGatewayService,
   ) {
-    // console.log(process.cwd());
     this.device = awsIOT.device({
       keyPath: 'src/certs/private.pem.key',
       certPath: 'src/certs/certificate.pem.crt',
@@ -41,20 +40,11 @@ export class EventService {
       IOTGateway.sendIOTData('test', message, 'message');
     });
   }
-  // publishToMQTT(topic: string, message: string) {
-  //   console.log('Calling publishToMQTT');
-  //   this.device.publish(topic, message, (err: string) => {
-  //     if (err) {
-  //       console.log('Error publishing to MQTT', err);
-  //     } else {
-  //       console.log(`Message published to topic ${topic}`);
-  //     }
-  //   });
-  // }
-  async publishToMQTT(topic: string, message: string): Promise<void> {
+  async publishToMQTT(topic: string, message: any): Promise<void> {
+    const messageString =
+      typeof message === 'string' ? message : JSON.stringify(message);
     return new Promise((resolve, reject) => {
-      console.log('Here');
-      this.device.publish(topic, message, (err: string) => {
+      this.device.publish(topic, messageString, (err: string) => {
         if (err) {
           console.log('Error publishing to MQTT', err);
           return reject(err);

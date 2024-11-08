@@ -8,6 +8,7 @@
 #include <time.h>
 #include <FastLED.h>
 #include <ArduinoJson.h>
+#include <../lora/lora.h>
 // setup time
 CRGB leds[5];
 void setupNTP()
@@ -87,6 +88,8 @@ void setup()
     FastLED.addLeds<NEOPIXEL, 27>(leds, 1);
     leds[0] = CRGB(0x99, 0x33, 0x00);
     FastLED.show();
+
+    // Setup Lora
 
     Serial.println("Starting...");
     if (!LittleFS.begin())
