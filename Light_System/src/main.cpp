@@ -222,6 +222,8 @@
 //     client.loop();
 // }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "Arduino.h"
 #include "LoRa_E220.h"
 #include "FastLED.h"
@@ -232,6 +234,10 @@
 // #define PIN_AUX 2 // AUX pin
 #define PIN_RX 32 // RX pin (GPIO 16)
 #define PIN_TX 26 // TX pin (GPIO 17)
+
+byte ADDH = 0x15; // Địa chỉ cao
+byte ADDL = 0x16; // Địa chỉ thấp
+byte CHAN = 0x21; // Kênh truyền
 
 #define LORA_BAUD_RATE 9600
 CRGB leds[5];
@@ -245,12 +251,24 @@ LoRa_E220 e220(&mySerial, Lora_Baudrate);
 // Timer 1
 const long interval_1 = 5000;
 SoftwareTimer sendTimer(interval_1);
-
+void printParameters(struct Configuration configuration);
 // Timer 2
 const long interval_2 = 3000;
 SoftwareTimer receivedTimer(interval_2);
 void setup()
 {
+    // /// Configuration
+    // ResponseStructContainer c;
+    // c = e220.getConfiguration();
+    // // It's important get configuration pointer before all other operation
+    // Configuration configuration = *(Configuration *)c.data;
+    // Serial.print("Configuration:");
+    // Serial.println(c.status.getResponseDescription());
+    // Serial.println(c.status.code);
+
+    // printParameters(configuration);
+    // c.close();
+    // //////////////////////////////////////////////////////////////////////
     FastLED.addLeds<NEOPIXEL, 27>(leds, 1);
     leds[0] = CRGB(0xff, 0xff, 0x00);
     FastLED.show();
@@ -269,8 +287,11 @@ void loop()
     // Timer for send message
     if (sendTimer.isElapsed())
     {
-        e220.sendMessage("Hello from M5Stack Atom Lite!");
+        // e220.sendMessage("Hello from M5Stack Atom Lite!");
+        String message = "Hello from M5Stack Atom Lite";
+        ResponseStatus rs = e220.sendFixedMessage(ADDH, ADDL, CHAN, message);
         Serial.println("Message sent!");
+        // Serial.println(rs.getResponseDescription());
         sendTimer.reset();
     }
 

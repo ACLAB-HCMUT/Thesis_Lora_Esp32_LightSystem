@@ -72,3 +72,4 @@ MqttCredentialModel ConfigService::getMqttCredential()
     mqttConfigFile.close();
     return MqttCredentialModel(port, host, clientId, publishTopic, receiveTopic);
 }
+// LoRaSerial.write(hexStringToBytes(msg).c_str(), hexStringToBytes(msg).length());
