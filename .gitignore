@@ -11,6 +11,12 @@ __pycache__/
 # C extensions
 *.so
 
+# AWS
+aws_cert_ca.pem
+cert.pem.crt
+private.pem.key
+
+
 # Distribution / packaging
 .Python
 build/

@@ -7,7 +7,7 @@ def uart_callback(timer):
     global lora, msg
     if lora.UART_1.any():
         msg = binascii.hexlify(lora.UART_1.read())
-        print(f"Receive from LoRa: {msg}")
+        print(f"Receive from LoRa khac: {msg}")
 
 
 def loop():
@@ -19,10 +19,18 @@ def loop():
             pass
         elif counter == 1:
             lora.set_channel(1)
-        else:
+            pass
+        elif counter == 3:
             lora.set_reg0(air_rate=9600)
             pass
-        counter = (counter + 1) % 3
+        elif counter == 4:
+            lora.set_reg3(Transparent=False)
+            print("Receiving")
+            pass
+        else:
+            lora.send_msg_to(msg='a', address='0002', channel=1)
+            pass
+        counter = (counter + 1) % 6
         time.sleep(1)
     
 def setup():
@@ -30,7 +38,6 @@ def setup():
     # Create LoRa instance
     lora = LoRa.LoRa()
     lora.enable_config_mode()
-    
     # Timer for FSM
     timer0 = Timer(0)
     timer0.init(freq=10, mode=Timer.PERIODIC, callback=uart_callback)
