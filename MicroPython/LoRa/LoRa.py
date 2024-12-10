@@ -51,7 +51,7 @@ class LoRa(object):
     def send_msg(self, msg):
         if DEBUG:
             print(f"Send message: {msg}")
-        self.UART_1.write(binascii.unhexlify(msg))
+        self.UART_1.write(binascii.unhexlify(msg)) # hexa to byte
     
     def send_msg_to(self, msg, address='0000', channel=0):
         # Create first 3 bytes for header
@@ -60,7 +60,7 @@ class LoRa(object):
         header = address + int2hex(channel)
         # Create fully package to send via LoRa
         package = binascii.unhexlify(header) + binascii.unhexlify(binascii.hexlify(msg))   # So fucking dirty
-        package = binascii.hexlify(package)
+        package = binascii.hexlify(package) # byte to hexa
         # Send package
         self.send_msg(package)
     
@@ -208,7 +208,9 @@ class LoRa(object):
         value = int2hex(value)
         cmd = self.SETTING_CMD + self.REG_3 + '01' + value
         self.send_msg(cmd)
-    
+    def check_channel(self):
+        print("Checking Channel...")
+        self.read_reg(self.REG_2, '01')
 
     
 def is_hexa(code:str):
