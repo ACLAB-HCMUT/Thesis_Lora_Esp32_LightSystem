@@ -3,30 +3,57 @@ from machine import Timer
 import time
 import binascii
 
+ADDRESS = '0001'
+CHANNEL = '01'
+UART_BAUDRATE = 9600    # unit: bps
+AIR_RATE = 9600         # unit: bps
+TRANSPARENT = False     # Fixed transmission
+
 def uart_callback(timer):
-    global lora, msg
+    global lora, msg_buffer
     if lora.UART_1.any():
         msg = binascii.hexlify(lora.UART_1.read())
+        msg_buffer.append(msg)
         print(f"Receive from LoRa: {msg}")
 
+def fsm_config():
+    global state, lora
+    if state == 0:
+        # Set address of LoRa node
+        lora.set_address(ADDRESS)
+    elif state == 1:
+        #
+        pass        
+    pass
 
 def loop():
-    global lora
-    counter = 0
+    global lora, success, state
     while True:
-        if counter == 0:
-            lora.set_address('0001')
+        if state > 3:
             pass
-        elif counter == 1:
-            lora.set_channel(1)
+        
+        if len(msg_buffer) > 0:
+            if msg_buffer[0] == b'ffffff':
+                # Config fail => try again
+                print("Wrong message format")
+            else:
+                # Change state to send another message
+                state += 1
         else:
-            lora.set_reg0(air_rate=9600)
-            pass
-        counter = (counter + 1) % 3
-        time.sleep(1)
+            # Send message
+            fsm_config()
+            
+        time.sleep(0.04)   # 40 ms each loop to wait for response message from lora
     
 def setup():
-    global lora, timer0
+    global lora, timer0, state, msg_buffer, success
+    print("hello from LoRa")
+    
+    # some config parameter
+    msg_buffer = []
+    success = False
+    state = 0
+    
     # Create LoRa instance
     lora = LoRa.LoRa()
     lora.enable_config_mode()
