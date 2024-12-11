@@ -1,12 +1,12 @@
 import binascii
 # Utils
 def address_decode(address:bytes) -> str:
-    return str(address)[2:-1]
+    return str(address)[2:-1].replace('\\x', '')
 
 def address_encode(address:str) -> bytes:
     return binascii.unhexlify(address)
 def msg2str(message:bytes) -> str:
-    return str(message)[2:-1]
+    return str(message)[2:-1].replace('\\x', '')
 
 # PING message
 def ping_pack(address_source:bytes, address_destination:bytes) -> bytes:

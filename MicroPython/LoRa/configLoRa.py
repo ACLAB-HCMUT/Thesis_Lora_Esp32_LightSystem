@@ -7,6 +7,7 @@ import binascii
 NUM_CONFIG = 5
 MAX_TRY = 5
 
+
 def uart_callback(timer):
     global lora, msg_buffer, success
     if lora.UART_1.any():

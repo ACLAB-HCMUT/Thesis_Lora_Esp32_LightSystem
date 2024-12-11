@@ -253,3 +253,4 @@ def uart_callback(timer):
     if LoRa.UART_1.any():
         msg = LoRa.UART_1.read()
         print(f"Receive from LoRa: {binascii.hexlify(msg)}")
+

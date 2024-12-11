@@ -3,6 +3,7 @@ from message import *
 from machine import Timer
 import time
 import binascii
+import os
 
 def uart_callback(timer):
     global lora, msg
@@ -10,18 +11,16 @@ def uart_callback(timer):
         # msg = binascii.hexlify(lora.UART_1.read())
         msg = (lora.UART_1.read())
         print(f"Receive from LoRa: {msg}")
-        msg = bytearray(msg)
-        print(f"msg[0] = {msg[0]}")
-
+        src_addr, des_addr = ping_unpack(msg)
+        print("source = " + address_decode(src_addr))
+        print("destination = " + address_decode(des_addr))
+        msg_back = ping_pack(address_encode(lora.address),src_addr)
+        lora.send_raw_msg(msg_back,address_decode(src_addr),int(lora.channel))
+        
 
 def loop():
     global lora
-    with open("config.txt", "r") as file:
-        configs = [line.split(' ')[1][:-2] for line in file.readlines()]
-        my_address = address_encode(configs[0])
-        target_address = address_encode('0001')
     while True:
-        
         time.sleep(1)
     
 def setup():
