@@ -17,7 +17,8 @@ def uart_callback(timer):
     
 def config():
     with open("config.txt", "r") as file_config:
-        data = [line.split(' ')[1][:-2] for line in file_config.readlines()]
+        # print(file_config.readlines())
+        data = [line.split(' ')[1].replace('\r', '').replace('\n', '') for line in file_config.readlines()]
         lora.set_address(data[0])
         time.sleep(0.04)
         lora.set_reg0(int(data[1]), int(data[2]), int(data[3]))

@@ -74,6 +74,7 @@ class LoRa(object):
         if not self.is_config_mode:
             return
         if not is_hexa(address):
+            print(f"adrress: {address}")
             print("Wrong format address")
             return
         addr_len = len(address)
