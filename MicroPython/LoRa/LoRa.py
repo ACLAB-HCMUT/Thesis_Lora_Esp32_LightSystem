@@ -53,6 +53,15 @@ class LoRa(object):
             print(f"Send message: {msg}")
         self.UART_1.write(binascii.unhexlify(msg)) # hexa to byte
     
+    def send_raw_msg(self, msg: bytes, address='0000', channel=1):
+        # Create first 3 bytes for header
+        if channel < 0 or channel > 80:
+            channel = 0
+        header = address + int2hex(channel)
+        if DEBUG:
+            print(f"Send message: {binascii.unhexlify(header) + msg}")
+        self.UART_1.write(binascii.unhexlify(header) + msg)
+    
     def send_msg_to(self, msg, address='0000', channel=0):
         # Create first 3 bytes for header
         if channel < 0 or channel > 80:

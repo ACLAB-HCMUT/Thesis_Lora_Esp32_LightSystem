@@ -12,6 +12,7 @@ echo Using port: %port%
 ampy --port %port% put MicroPython\LoRa\LoRa.py
 ampy --port %port% put MicroPython\LoRa\message.py
 ampy --port %port% put MicroPython\LoRa\config.txt
+ampy --port %port% put MicroPython\LedRGB\led.py
 
 :: Run program
 if "%1"=="config" (
