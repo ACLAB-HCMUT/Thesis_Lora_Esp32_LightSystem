@@ -1,4 +1,5 @@
 import LoRa
+from message import *
 from machine import Timer
 import time
 import binascii
@@ -15,19 +16,12 @@ def uart_callback(timer):
 
 def loop():
     global lora
-    counter = 0
+    with open("config.txt", "r") as file:
+        configs = [line.split(' ')[1][:-2] for line in file.readlines()]
+        my_address = address_encode(configs[0])
+        target_address = address_encode('0001')
     while True:
-        if counter == 0:
-            # lora.read_reg(address='00', length='02')
-            # lora.set_address('0002')
-            pass
-        elif counter == 1:
-            # lora.set_channel(1)
-            pass
-        else:
-            # lora.set_reg0(air_rate=9600)
-            pass
-        counter = (counter + 1) % 3
+        
         time.sleep(1)
     
 def setup():
@@ -35,7 +29,6 @@ def setup():
     print("hello from LoRa")
     # Create LoRa instance
     lora = LoRa.LoRa()
-    lora.enable_config_mode()
     
     # Timer for FSM
     timer0 = Timer(0)
