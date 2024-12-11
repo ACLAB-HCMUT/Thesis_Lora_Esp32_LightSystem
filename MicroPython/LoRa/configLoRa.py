@@ -1,4 +1,5 @@
 import LoRa
+from configParam import getConfig
 from machine import Timer
 import time
 import binascii
@@ -16,19 +17,16 @@ def uart_callback(timer):
             success += 1
     
 def config():
-    with open("config.txt", "r") as file_config:
-        # print(file_config.readlines())
-        data = [line.split(' ')[1].replace('\r', '').replace('\n', '') for line in file_config.readlines()]
-        lora.set_address(data[0])
-        time.sleep(0.04)
-        lora.set_reg0(int(data[1]), int(data[2]), int(data[3]))
-        time.sleep(0.04)
-        lora.set_reg1(int(data[4]), int(data[5]), int(data[6]))
-        time.sleep(0.04)
-        lora.set_channel(int(data[7]))
-        time.sleep(0.04)
-        lora.set_reg3(int(data[8]), int(data[9]), int(data[10]), int(data[11]))
-        time.sleep(0.04)
+    lora.set_address(getConfig()['address'])
+    time.sleep(0.04)
+    lora.set_reg0(int(getConfig()['UART_rate']), int(getConfig()['parity_bit']), int(getConfig()['air_rate']))
+    time.sleep(0.04)
+    lora.set_reg1(int(getConfig()['package_length']), int(getConfig()['RSSI_noise']), int(getConfig()['power']))
+    time.sleep(0.04)
+    lora.set_channel(int(getConfig()['channel']))
+    time.sleep(0.04)
+    lora.set_reg3(int(getConfig()['RSSI_data']), int(getConfig()['Transmission']), int(getConfig()['LBT']), int(getConfig()['WOR_cycle']))
+    time.sleep(0.04)
     
 def main():
     global success, lora

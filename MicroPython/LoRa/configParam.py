@@ -1,0 +1,15 @@
+def getConfig():
+    return {
+        'address': '0010',
+        'UART_rate': '9600',
+        'parity_bit': '0',
+        'air_rate': '9600',
+        'package_length': '200',
+        'RSSI_noise': '0',
+        'power': '22',
+        'channel': '1',
+        'RSSI_data': '0',
+        'Transmission': '1',
+        'LBT': '0',
+        'WOR_cycle': '500'
+    }

@@ -1,6 +1,7 @@
 from machine import UART
 from micropython import const
 import binascii
+from configParam import getConfig
 
 DEBUG = True
 
@@ -41,6 +42,18 @@ class LoRa(object):
 
     def __init__(self):
         self.is_config_mode = False
+        self.address = getConfig()['address']
+        self.UART_rate = getConfig()['UART_rate']
+        self.parity_bit = getConfig()['parity_bit']
+        self.air_rate = getConfig()['air_rate']
+        self.package_length = getConfig()['package_length']
+        self.RSSI_noise = getConfig()['RSSI_noise']
+        self.power = getConfig()['power']
+        self.channel = getConfig()['channel']
+        self.RSSI_data = getConfig()['RSSI_data']
+        self.Transmission = getConfig()['Transmission']
+        self.LBT = getConfig()['LBT']
+        self.WOR_cycle = getConfig()['WOR_cycle']
         
     def enable_config_mode(self):
         self.is_config_mode = True
@@ -187,7 +200,7 @@ class LoRa(object):
         cmd = self.SETTING_CMD + self.REG_2 + '01' + channel
         self.send_msg(cmd)
 
-    def set_reg3(self, RSSI_byte=False, Transparent=True, LBT=False, WOR_cycle=500):
+    def set_reg3(self, RSSI_byte=False, Transmission=True, LBT=False, WOR_cycle=500):
         if not self.is_config_mode:
             return
         value = 0
@@ -197,12 +210,12 @@ class LoRa(object):
         else:
             value |= (0 << 7)
         # Process Transmission Method
-        if Transparent:
+        if Transmission:
             # Always broadcast
-            value |= (0 << 6)
+            value |= (1 << 6)
         else:
             # Use first 3 byte to define Address and channel
-            value |= (1 << 6)
+            value |= (0 << 6)
         # Process LBT (Listen Before Talk)
         if LBT:
             value |= (1 << 5)
