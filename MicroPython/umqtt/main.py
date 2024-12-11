@@ -4,24 +4,20 @@ import ujson
 import machine
 import network
 from umqtt.simple import MQTTClient
+import binascii
 
-#Enter your wifi SSID and password below.
-wifi_ssid = "22.08"
-wifi_password = "414414a2"
 
-#Enter your AWS IoT endpoint. You can find it in the Settings page of
-#your AWS IoT Core console. 
-#https://docs.aws.amazon.com/iot/latest/developerguide/iot-connect-devices.html 
+wifi_ssid = "ACLAB"
+wifi_password = "ACLAB2023"
+
 aws_endpoint = b'ae1gu64w7wyef-ats.iot.ap-southeast-1.amazonaws.com'
 
-#If you followed the blog, these names are already set.
 thing_name = "esp32_thing"
 client_id = "ESP_32_Device"
 private_key = "private.pem.key"
 private_cert = "cert.pem.crt"
 ca_key = "aws_cert_ca.pem"
 
-#Read the files used to authenticate to AWS IoT Core
 with open(private_key, 'rb') as f:
     key = f.read()
     print(key)
@@ -30,19 +26,10 @@ with open(private_cert, 'rb') as f:
 with open(ca_key, 'rb') as f:
     ca = f.read()
 
-#These are the topics we will subscribe to. We will publish updates to /update.
-#We will subscribe to the /update/delta topic to look for changes in the device shadow.
-# topic_pub = "$aws/things/" + thing_name + "/shadow/update"
-# topic_sub = "$aws/things/" + thing_name + "/shadow/update/delta"
-topic_pub = "esp32_thing/pub"
-topic_sub = "esp32_thing/light"
+
 ssl_params = {"key":key, "cert":cert, "server_side":False, "cadata": ca}
 
-#Define pins for LED and light sensor. In this example we are using a FeatherS2.
-#The sensor and LED are built into the board, and no external connections are required.
-# light_sensor = machine.ADC(machine.Pin(4))
-# light_sensor.atten(machine.ADC.ATTN_11DB)
-# led = machine.Pin(13, machine.Pin.OUT)
+
 info = os.uname()
 
 #Connect to the wireless network
@@ -79,16 +66,50 @@ def mqtt_subscribe(topic, msg):
     print("Message received...")
     message = ujson.loads(msg)
     print(topic, message)
-    # if message['state']['led']:
-    #     led_state(message)
     print("Done")
 
-# def led_state(message):
-#     led.value(message['state']['led']['onboard'])
+def ascii_to_binary(data):
+    # Chuyển từng cặp ký tự ASCII thành một byte
+    try:
+        binary_data = binascii.unhexlify(data)
+        return binary_data
+    except binascii.Error as e:
+        print(f"Error converting ASCII to binary: {e}")
+        return None
+    
+def process_data(data):
+    data = list(data)
+    device_id = data[0]  
+    print(device_id, "device id")
+    device_status = data[1]  
+    print(device_status, "device status")
+    light_value = data[2]  
+    print(light_value, "light_value")
 
-#We use our helper function to connect to AWS IoT Core.
-#The callback function mqtt_subscribe is what will be called if we 
-#get a new message on topic_sub.
+
+    return {
+        "device_id": device_id,
+        "status": device_status,
+        "light": light_value
+    }
+
+fake_data_list = [
+    b'010130',  # device_id = 1, status = 1 = on, light_value = 30
+    b'020040',  # device_id = 2, status = 0 = off, light_value = 40
+    b'030155',  # device_id = 3, status = 1 = on , light_value = 55
+]
+
+def process_multiple_fake_data(fake_data_list):
+    parsed_data_list = []
+    for fake_data_ascii in fake_data_list:
+        fake_data_binary = ascii_to_binary(fake_data_ascii)
+        if fake_data_binary:
+            parsed_data = process_data(fake_data_binary)
+            if parsed_data:
+                parsed_data_list.append(parsed_data)
+    return parsed_data_list
+
+
 try:
     mqtt = mqtt_connect()
     mqtt.set_callback(mqtt_subscribe)
@@ -96,39 +117,27 @@ try:
 except:
     print("Unable to connect to MQTT.")
 
-
-while True: 
-#Check for messages.
+   
+while True:
     try:
         mqtt.check_msg()
-    except:
-        print("Unable to check for messages.")
+        parsed_data_list = process_multiple_fake_data(fake_data_list)
+        if parsed_data_list is None:
+            continue
+        # for parsed_data in parsed_data_list:
+        #     payload = ujson.dumps({
+        #         "device_id": parsed_data["device_id"],
+        #         "status": parsed_data["status"],
+        #         "light_value": parsed_data["light"]
+        #     })
+        payload = ujson.dumps({
+            "data": parsed_data_list
+        })
+        mqtt_publish(client=mqtt, message=payload)
+    except Exception as e:
+        print(f"Error in loop: {e}")
 
-    mesg = ujson.dumps({
-        "state":{
-            "reported": {
-                "device": {
-                    "client": client_id,
-                    "uptime": time.ticks_ms(),
-                    "hardware": info[0],
-                    "firmware": info[2]
-                },
-                "sensors": {
-                    "light": "30"
-                },
-                "led": {
-                    "onboard": "30"
-                }
-            }
-        }
-    })
-
-#Using the message above, the device shadow is updated.
-    try:
-        mqtt_publish(client=mqtt, message=mesg)
-    except:
-        print("Unable to publish message.")
-
-#Wait for 10 seconds before checking for messages and publishing a new update.
     print("Sleep for 10 seconds")
     time.sleep(10)
+
+
