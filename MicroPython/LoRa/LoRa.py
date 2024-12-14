@@ -41,6 +41,21 @@ class LoRa(object):
 
     def __init__(self):
         self.is_config_mode = False
+        with open("config.txt", "r") as file_config:
+            data = [line.split(' ')[1].replace('\r', '').replace('\n', '') for line in file_config.readlines()]
+            self.address = data[0]
+            self.UART_rate = int(data[1])
+            self.parity_bit = int(data[2])
+            self.air_rate = int(data[3])
+            self.package_length = int(data[4])
+            self.RSSI_noise = int(data[5])
+            self.power = int(data[6])
+            self.channel = int(data[7])
+            self.RSSI_data = int(data[8])
+            self.Transmission = int(data[9])
+            self.LBT = int(data[10])
+            self.WOR_cycle = int(data[11])
+
         
     def enable_config_mode(self):
         self.is_config_mode = True
@@ -240,3 +255,4 @@ def uart_callback(timer):
     if LoRa.UART_1.any():
         msg = LoRa.UART_1.read()
         print(f"Receive from LoRa: {binascii.hexlify(msg)}")
+
