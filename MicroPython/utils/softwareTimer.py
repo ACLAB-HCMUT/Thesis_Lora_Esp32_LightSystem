@@ -29,7 +29,7 @@ def timerCallback(timer):
     for timer_obj in timer_vector:
         timer_obj.update()
 
-def set_timer(timer_id, duration):
+def setTimer(timer_id, duration):
     global timer_vector
     my_timer = None
     for timer_obj in timer_vector:
@@ -41,7 +41,14 @@ def set_timer(timer_id, duration):
     else:
         my_timer.setDuration(duration)
 
-def init_software():
+def getFlag(timer_id):
+    global timer_vector
+    for timer_obj in timer_vector:
+        if timer_obj.id == timer_id:
+            return timer_obj.getFlag()
+    raise Exception(f"Have no timer {timer_id}")
+
+def initSoftwareTimer():
     global timer_vector
     timer_vector = []
     
