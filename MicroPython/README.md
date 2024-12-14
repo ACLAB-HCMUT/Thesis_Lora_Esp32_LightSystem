@@ -1,7 +1,7 @@
 ﻿# Quick start for using MicroPyhton with ATOM Lite
 ## 1. Build virtual environment connect directly to ATOM Lite by PC.
 1. Set up Python virtual environment in the workingspace folder by the command: `py -3.11 -m venv .venv`.
-2. Activate the environment that you set up: `.\.venv\Scripts\Activate.ps1 `.
+2. Activate the environment that you set up: `.\.venv\Scripts\Activate.ps1`.
 3. Install `ampy` (this is used for connecting to working space on ESP32 chip in ATOM Lite) and `esptool` (use to interact with ESP32 chip in ATOM Lite). The command is: `pip install adafruit-ampy esptool`.
 4. The next step is a necessary for the first time you work with new ATOM Lite. That is erase `flash_memory`. 
    - Command to erase flash: `esptool.exe --port <port-name> --chip auto erase_flash` 
@@ -10,10 +10,10 @@
    - Command is: `esptool.exe --port /*port name*/ --chip /*chip type*/ write_flash 0x1000 /* firmware file */`. Note that firmware file is in `firmware` folder.
    - Example: `esptool.exe --port COM6 --chip esp32 write_flash 0x1000 M5STACK_ATOM-20240602-v1.23.0.bin`.
 6. Put file to chip by cmd: 
-   - Command: `ampy.exe --port /*port name*/ put /*file name*/`.
+   - Command: `ampy.exe --port /*port name*/ put /* file name*/`.
    - Example: `ampy.exe --port COM6 put main.py`.
 7. To run file on chip, use cmd: 
-   - Command: `ampy.exe --port /*port name*/ run /*file name */`.
+   - Command: `ampy.exe --port /*port name*/ run /* file name */`.
    - Example: `ampy.exe --port COM6 run main.py`.
 
 # Resolved problems
