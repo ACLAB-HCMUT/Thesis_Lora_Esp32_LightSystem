@@ -1,0 +1,41 @@
+variables:
+  IMAGE_NAME: '${DOMAIN_REGISTRY}/${REPO_NAME}:${CI_COMMIT_TAG}_${CI_COMMIT_SHORT_SHA}'
+stages:
+  - buildandpush
+  - run
+  - showlog
+
+buildandpush:
+  stage: buildandpush
+  before_script:
+    - echo "Logging Into AWS ECR."
+    - echo "$AWS_ACCESS_KEY_ID" | aws configure set aws_access_key_id -
+    - echo "$AWS_SECRET_ACCESS_KEY" | aws configure set aws_secret_access_key -
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${DOMAIN_REGISTRY}
+  script:
+    - docker build -t blog_system_be .
+    - docker tag blog_system_be:latest ${IMAGE_NAME}
+    - docker push ${IMAGE_NAME}
+  only:
+    - tags
+  tags:
+    - ${TAG_RUNNER_NAME}
+
+run:
+  stage: run
+  before_script:
+    - echo "Logging Into AWS ECR for pulling IMAGE"
+    - echo "$AWS_ACCESS_KEY_ID" | aws configure set aws_access_key_id -
+    - echo "$AWS_SECRET_ACCESS_KEY" | aws configure set aws_secret_access_key -
+    - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${DOMAIN_REGISTRY}
+  script:
+    - echo "Trying to pull image from AWS ECR"
+    - docker pull ${IMAGE_NAME}
+    - pwd
+    - docker ps
+    - docker compose -f docker-compose.yml down    # delete all resource container before run container
+    - docker compose -f docker-compose.yml up -d
+  only:
+    - tags
+  tags:
+    - ${TAG_RUNNER_NAME}

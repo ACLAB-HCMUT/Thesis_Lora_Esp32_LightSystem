@@ -1,0 +1,21 @@
+version: '3'
+services:
+  be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3
+    networks:
+      - be-networks
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - '3000:80'
+    networks:
+      - be-networks
+networks:
+  be-networks:
+    driver: bridge
