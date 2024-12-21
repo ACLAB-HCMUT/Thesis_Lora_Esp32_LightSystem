@@ -9,10 +9,15 @@ if not "%2"=="" (
 
 :: Run the ampy command with the provided or default port
 echo Using port: %port%
+echo Put LoRa.py
 ampy --port %port% put MicroPython\LoRa\LoRa.py
+echo Put message.py
 ampy --port %port% put MicroPython\LoRa\message.py
+echo Put configParam.py
 ampy --port %port% put MicroPython\LoRa\configParam.py
+echo Put led.py
 ampy --port %port% put MicroPython\LedRGB\led.py
+echo Put softwareTimer.py
 ampy --port %port% put MicroPython\utils\softwareTimer.py
 
 :: Run program

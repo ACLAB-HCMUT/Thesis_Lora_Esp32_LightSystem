@@ -15,6 +15,14 @@ def red():
         return
     led[0] = (25, 0, 0)
     led.write()
+    
+def black():
+    global led
+    if led is None:
+        print("Led is not initialied")
+        return
+    led[0] = (0, 0, 0)
+    led.write()
 
 def green():
     global led
