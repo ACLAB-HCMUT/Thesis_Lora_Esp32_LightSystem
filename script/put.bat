@@ -1,6 +1,6 @@
 @echo off
 :: Set default port to COM8
-set "port=COM8"
+set "port=COM4"
 
 :: Check if the user provided a port argument
 if not "%2"=="" (

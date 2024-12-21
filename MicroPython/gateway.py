@@ -5,37 +5,61 @@ import time
 import binascii
 import os
 from config_aws import *
-
+import random
+topic_sub = "esp32_thing/light"
 broadcast_address = bytes(b'\xff\xff')
+def generate_random_string():
+    # Generate a random number between 0 and 99
+    random_number = random.randint(0, 99)
+    # Format it as a string with two digits, prefixed by "00"
+    return f"00{random_number:02d}"
 def ping_callback(timer):
-    msg_back = ping_pack(address_encode(lora.address),broadcast_address )
-    lora.send_raw_msg(msg_back,address_decode(broadcast_address),int(lora.channel))
+    global mqtt_client
+    # msg_back = ping_pack(address_encode(lora.address),broadcast_address )
+    # lora.send_raw_msg(msg_back,address_decode(broadcast_address),int(lora.channel))
+    random_sensor = generate_random_string()
+    payload = format_package_send_server("0010","01",random_sensor)
+    mqtt_publish(client=mqtt_client,message=payload)
 
 def uart_callback(timer):
-    global lora, msg
-    if lora.UART_1.any():
-        # msg = binascii.hexlify(lora.UART_1.read())
-        msg = (lora.UART_1.read())
-        print(f"Receive from LoRa: {msg}")
-        src_addr, des_addr = ping_unpack(msg)
-        print("source = " + address_decode(src_addr))
-        print("destination = " + address_decode(des_addr))
-        payload = format_package(address_decode(src_addr))
-        print(payload)
-        mqtt = get_mqtt()
-        mqtt_publish(client=mqtt,message=payload)
+    # global lora, msg
+    # if lora.UART_1.any():
+    #     # msg = binascii.hexlify(lora.UART_1.read())
+    #     msg = (lora.UART_1.read())
+    #     print(f"Receive from LoRa: {msg}")
+    #     src_addr, des_addr = ping_unpack(msg)
+    #     print("source = " + address_decode(src_addr))
+    #     print("destination = " + address_decode(des_addr))
+    #     payload = format_package(address_decode(src_addr))
+    #     print(payload)
+    #     mqtt = get_mqtt()
+    #     mqtt_publish(client=mqtt,message=payload)
+    pass
+
+def mqtt_subscribe(topic, msg):
+    print("Message received...")
+    message = ujson.loads(msg)
+    print(topic, message)
+    print("Done")
 
 def loop():
     global lora
     while True:
+        mqtt_client.check_msg()
         time.sleep(1)
     
 def setup():
-    global lora, timer0, timer1
+    global lora, timer0, timer1, mqtt_client
     print("hello from LoRa")
     # Create LoRa instance
     lora = LoRa()
     
+    # Initialize MQTT client
+    mqtt_client = get_mqtt()
+    mqtt_client.set_callback(mqtt_subscribe)
+    mqtt_client.subscribe(topic_sub)
+    print(f"Subscribed to topic: {topic_sub}")
+
     # Timer for FSM
     timer0 = Timer(0)
     timer0.init(freq=10, mode=Timer.PERIODIC, callback=uart_callback)
