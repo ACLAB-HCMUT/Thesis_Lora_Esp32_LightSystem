@@ -5,9 +5,9 @@ import machine
 import network
 from umqtt.simple import MQTTClient
 import binascii
-
-wifi_ssid = "ACLAB"
-wifi_password = "ACLAB2023"
+from datetime import datetime, timedelta, timezone
+wifi_ssid = "22.08"
+wifi_password = "414414a2"
 aws_endpoint = b'ae1gu64w7wyef-ats.iot.ap-southeast-1.amazonaws.com'
 thing_name = "esp32_thing"
 client_id = "ESP_32_Device"
@@ -41,10 +41,19 @@ def mqtt_subscribe(topic, msg):
     print(topic, message)
     print("Done")
 
-def format_package(src_address):
+def format_package_send_server(src_address,status,sensor_light):
+    int_sensor_light=int(sensor_light)
+    int_status = int(status)
+    int_address = int(src_address)
+    vietnam_tz = timezone(timedelta(hours=7))
+    vietnam_time = datetime.now(vietnam_tz)
     return ujson.dumps({
-        "device_id": src_address,
+        "device_id": int_address,
+        "status": int_status,
+        "sensor": int_sensor_light,
+        "timestamp": vietnam_time.strftime("%Y-%m-%d %H:%M:%S")
     })
+
 
 def get_mqtt():
     global mqtt
