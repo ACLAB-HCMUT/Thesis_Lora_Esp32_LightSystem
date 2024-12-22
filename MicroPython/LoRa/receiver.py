@@ -33,16 +33,35 @@ def loop():
         if isMessageArrived():
             # Process message
             msg = processMessage()
+            print(f"length of message: {len(msg)}")
             if len(msg) == 0:
                 continue
-            print(f"Message ID: {msg[0]}")
+            msg_id = msg[0:1]
+            print(f"Message ID: {msg_id[0]}")
+            # msg = msg[1:]
             print(f"Message content: {binascii.hexlify(msg[2:])}")
-            if msg[0:1] == bytes(CONTROL_ID):
-                control_msg = control_unpack(msg[1:])
+            if msg_id == PING_ID:
+                ping_msg = ping_unpack(msg)
+                print(f"Source address: {ping_msg.getSourceAddress()}")
+                print(f"Destination address: {ping_msg.getDestinationAddress()}")
+                
+            elif msg_id == CONTROL_ID:
+                control_msg = control_unpack(msg)
+                print(f"Command: {control_msg.ctl_cmd[0]}")
                 if control_msg.ctl_cmd == LED_ON:
                     led.red()
                 elif control_msg.ctl_cmd == LED_OFF:
                     led.black()
+            elif msg_id == REQUEST_STATUS_ID:
+                request_msg = request_status_unpack(msg)
+                print(f"Source address: {request_msg.getSourceAddress()}")
+                print(f"Destination address: {request_msg.getDestinationAddress()}")
+                print(f"Object ID: {request_msg.getObject()}")
+            elif msg_id == MESSAGE_STATUS_ID:
+                status_msg = status_unpack(msg)
+                print(f"Light state: {status_msg.getLightState()}")
+                print(f"Brightness value: {status_msg.getBrightnessValue()}")
+                pass
         pass
     
 def setup():
