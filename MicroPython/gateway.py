@@ -14,26 +14,36 @@ def generate_random_string():
     # Format it as a string with two digits, prefixed by "00"
     return f"00{random_number:02d}"
 def ping_callback(timer):
-    global mqtt_client
-    # msg_back = ping_pack(address_encode(lora.address),broadcast_address )
-    # lora.send_raw_msg(msg_back,address_decode(broadcast_address),int(lora.channel))
-    random_sensor = generate_random_string()
-    payload = format_package_send_server("0010","01",random_sensor)
-    mqtt_publish(client=mqtt_client,message=payload)
+    # global mqtt_client
+    # # msg_back = ping_pack(address_encode(lora.address),broadcast_address )
+    # # lora.send_raw_msg(msg_back,address_decode(broadcast_address),int(lora.channel))
+    # random_sensor = generate_random_string()
+    # payload = format_package_send_server("0010","01",random_sensor)
+    # mqtt_publish(client=mqtt_client,message=payload)
+    pass
 
 def uart_callback(timer):
-    # global lora, msg
-    # if lora.UART_1.any():
-    #     # msg = binascii.hexlify(lora.UART_1.read())
-    #     msg = (lora.UART_1.read())
-    #     print(f"Receive from LoRa: {msg}")
-    #     src_addr, des_addr = ping_unpack(msg)
-    #     print("source = " + address_decode(src_addr))
-    #     print("destination = " + address_decode(des_addr))
-    #     payload = format_package(address_decode(src_addr))
-    #     print(payload)
-    #     mqtt = get_mqtt()
-    #     mqtt_publish(client=mqtt,message=payload)
+    global lora, mqtt_client
+    if lora.UART_1.any():
+        # msg = binascii.hexlify(lora.UART_1.read())
+        msg = (lora.UART_1.read())
+        print(f"Receive from LoRa: {msg}")
+        if len(msg) == 11:
+            device_id = str(binascii.hexlify(msg[3:5]))[2:-1]
+            light_status = str(msg[8])
+            light_sensor = str(msg[9])
+            print(light_status)
+            payload = format_package_send_server(device_id, light_status, light_sensor)
+            # print(payload, "check point")
+            mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=payload)
+            
+        # src_addr, des_addr = ping_unpack(msg)
+        # print("source = " + address_decode(src_addr))
+        # print("destination = " + address_decode(des_addr))
+        # payload = format_package(address_decode(src_addr))
+        # print(payload)
+        # mqtt = get_mqtt()
+        # mqtt_publish(client=mqtt,message=payload)
     pass
 
 def mqtt_subscribe(topic, msg):
