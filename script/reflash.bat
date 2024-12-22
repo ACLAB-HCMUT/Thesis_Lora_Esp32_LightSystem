@@ -3,8 +3,8 @@
 set "port=COM8"
 
 :: Check if the user provided a port argument
-if not "%2"=="" (
-    set "port=%2"
+if not "%1"=="" (
+    set "port=%1"
 )
 
 :: Run the ampy command with the provided or default port
