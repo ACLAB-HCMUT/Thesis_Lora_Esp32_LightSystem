@@ -13,7 +13,7 @@ def uart_callback(timer):
     global lora, msg, msg_buffer
     if lora.UART_1.any():
         msg = lora.UART_1.read()
-        msg_buffer.append(msg)
+        appendMessage(msg)
         # lora.send_raw_msg(address_encode(lora.address) + msg[:2], address_decode(msg[:2]), 1)
         if LoRa.DEBUG:
             print(f"Received message: {msg}")
@@ -25,14 +25,30 @@ def loop():
         # if softwareTimer.getFlag(0):
         #     msg = ping_pack(address_encode(lora.address), address_encode('ffff'))
         #     lora.send_raw_msg(msg, 'ffff', 1)
+        if isMessageArrived():
+            msg = processMessage()
+            msg_id = msg[0:1]
+            msg = msg[1:]
+            if msg_id == PING_ID:
+                ping_msg = ping_unpack(msg)
+                if bytes(ping_msg.src_addr) == GTW_ADDRESS:
+                    sensor_value = random.randint(0, 100).to_bytes(2, "big")
+                    if state == LED_ON:
+                        state = LED_OFF
+                    else:
+                        state = LED_ON
+                    status_msg = status_pack(GTW_ADDRESS, state, sensor_value)
+                    lora.send_raw_msg(status_msg, address_decode(GTW_ADDRESS))
         if softwareTimer.getFlag(1):
+            continue
             des_addr_str = '0010'
+            sensor_value = random.randint(0, 100).to_bytes(2, "big")
             if state == LED_ON:
                 state = LED_OFF
             else:
                 state = LED_ON
-            control_message = control_pack(address_encode(des_addr_str), LED_ID, state)
-            lora.send_raw_msg(control_message, des_addr_str, 1)
+            status_msg = status_pack(GTW_ADDRESS, state, sensor_value)
+            # lora.send_raw_msg(control_message, des_addr_str, 1)
     
 def setup():
     global lora, timer0, msg_buffer
@@ -40,6 +56,9 @@ def setup():
     # Create LoRa instance
     lora = LoRa.LoRa()
     softwareTimer.initSoftwareTimer()
+    
+    # Intialize message buffer
+    init_message_buffer()
     
     # Timer for FSM
     timer0 = Timer(0)
