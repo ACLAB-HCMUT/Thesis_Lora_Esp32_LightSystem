@@ -5,7 +5,7 @@ import machine
 import network
 from umqtt.simple import MQTTClient
 import binascii
-from datetime import datetime, timedelta, timezone
+# from datetime import datetime, timedelta, timezone
 wifi_ssid = "22.08"
 wifi_password = "414414a2"
 aws_endpoint = b'ae1gu64w7wyef-ats.iot.ap-southeast-1.amazonaws.com'
@@ -14,7 +14,7 @@ client_id = "ESP_32_Device"
 private_key = "private.pem.key"
 private_cert = "cert.pem.crt"
 ca_key = "aws_cert_ca.pem"
-topic_pub = "esp32_thing/pub"
+topic_pub = "esp32_thing/ping"
 topic_sub = "esp32_thing/light"
 
 
@@ -42,16 +42,14 @@ def mqtt_subscribe(topic, msg):
     print("Done")
 
 def format_package_send_server(src_address,status,sensor_light):
-    int_sensor_light=int(sensor_light)
-    int_status = int(status)
-    int_address = int(src_address)
-    vietnam_tz = timezone(timedelta(hours=7))
-    vietnam_time = datetime.now(vietnam_tz)
+    int_sensor_light=sensor_light
+    int_status = status
+    int_address = src_address
     return ujson.dumps({
         "device_id": int_address,
         "status": int_status,
         "sensor": int_sensor_light,
-        "timestamp": vietnam_time.strftime("%Y-%m-%d %H:%M:%S")
+        "timestamp": "test"
     })
 
 
