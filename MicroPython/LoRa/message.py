@@ -92,7 +92,7 @@ class StatusMessage(object):
     
 # Utils
 def address_decode(address:bytes) -> str:
-    return str(address)[2:-1].replace('\\x', '')
+    return str(bytes(address))[2:-1].replace('\\x', '')
 def address_encode(address:str) -> bytes:
     return binascii.unhexlify(address)
 
