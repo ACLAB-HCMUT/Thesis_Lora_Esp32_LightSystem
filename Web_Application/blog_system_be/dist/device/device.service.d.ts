@@ -14,5 +14,7 @@ export declare class DeviceService {
         message: string;
     }>;
     get_number_device(): Promise<number>;
-    getAddition(arr1: number[], arr2: number[]): Promise<number[]>;
+    getErrorDevice(db_arr: string[], new_arr: string[]): Promise<string[]>;
+    checkAndInsert(devices: any): Promise<any>;
+    getAllDatabase(): Promise<DeviceEntity[]>;
 }

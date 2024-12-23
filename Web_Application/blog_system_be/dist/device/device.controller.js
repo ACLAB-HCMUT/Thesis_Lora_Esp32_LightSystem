@@ -8,9 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceController = exports.CompareFormat = exports.InsertDeviceDto = void 0;
 const common_1 = require("@nestjs/common");
@@ -47,19 +44,21 @@ let DeviceController = class DeviceController {
             console.log(error);
         }
     }
-    async compare_deviceID(body) {
-        try {
-            return this.deviceService.getAddition(body.array1, body.array2);
-        }
-        catch (error) {
-            console.log(error);
-        }
-    }
     async get_list_of_exist_id() {
         try {
             return await this.deviceService.getAllDeviceIdsAsNumbers();
         }
         catch (error) { }
+    }
+    async get_all_database() {
+        return await this.deviceService.getAllDatabase();
+    }
+    async get_average_realtime_sensor() {
+        const all_db = await this.deviceService.getAllDatabase();
+        const filteredDb = all_db.filter((item) => item.sensor !== '0');
+        const totalSensorValue = filteredDb.reduce((sum, item) => sum + (item.sensor ? Number(item.sensor) : 0), 0);
+        const average = filteredDb.length > 0 ? totalSensorValue / filteredDb.length : 0;
+        return average;
     }
 };
 exports.DeviceController = DeviceController;
@@ -78,19 +77,25 @@ __decorate([
 ], DeviceController.prototype, "get_number_device", null);
 __decorate([
     (0, publicRoute_1.Public)(),
-    (0, common_1.Post)('get_addition_device'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CompareFormat]),
-    __metadata("design:returntype", Promise)
-], DeviceController.prototype, "compare_deviceID", null);
-__decorate([
-    (0, publicRoute_1.Public)(),
     (0, common_1.Get)('device_list'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DeviceController.prototype, "get_list_of_exist_id", null);
+__decorate([
+    (0, publicRoute_1.Public)(),
+    (0, common_1.Get)('get_all_database'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], DeviceController.prototype, "get_all_database", null);
+__decorate([
+    (0, publicRoute_1.Public)(),
+    (0, common_1.Get)('get_average'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], DeviceController.prototype, "get_average_realtime_sensor", null);
 exports.DeviceController = DeviceController = __decorate([
     (0, publicRoute_1.Public)(),
     (0, common_1.Controller)('device'),

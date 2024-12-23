@@ -36,7 +36,7 @@ export function Total({
             </Stack>
             <Avatar
               sx={{
-                backgroundColor: "green",
+                backgroundColor: "yellow",
                 height: "56px",
                 width: "56px",
               }}

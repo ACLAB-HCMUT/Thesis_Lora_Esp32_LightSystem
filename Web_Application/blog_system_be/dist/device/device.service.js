@@ -85,9 +85,47 @@ let DeviceService = class DeviceService {
         const listDevice = await this.getAllDeviceIdsAsNumbers();
         return listDevice.length;
     }
-    async getAddition(arr1, arr2) {
-        const result = arr1.filter((num) => !arr2.includes(num));
+    async getErrorDevice(db_arr, new_arr) {
+        const result = db_arr.filter((str) => !new_arr.includes(str));
         return result;
+    }
+    async checkAndInsert(devices) {
+        const missingDevices = [];
+        const updatedDevices = [];
+        const incomingDeviceIds = devices.map((device) => device.device_id);
+        const incomingDeviceIds_format = devices.map((device) => parseInt(device.device_id, 10));
+        console.log('check incoming', incomingDeviceIds);
+        const allDevicesInDb = await this.getAllDeviceIdsAsNumbers();
+        const formated_allDeviceInDB = allDevicesInDb.map((device_id) => this.formatDeviceID(device_id));
+        console.log('check in database', formated_allDeviceInDB);
+        const untrackedDevices = await this.getErrorDevice(formated_allDeviceInDB, incomingDeviceIds);
+        console.log('check in database but not in incoming', untrackedDevices);
+        for (const device of devices) {
+            const existingDevice = await this.DeviceReposity.findOne({
+                where: { device_id: device.device_id },
+            });
+            if (!existingDevice) {
+                missingDevices.push(device.device_id);
+            }
+            else {
+                existingDevice.status = device.status;
+                existingDevice.sensor = device.sensor;
+                existingDevice.timestamp = device.timestamp;
+                updatedDevices.push(existingDevice);
+            }
+        }
+        if (updatedDevices.length > 0) {
+            await this.DeviceReposity.save(updatedDevices);
+        }
+        return {
+            message: 'Process completed',
+            missingDevices,
+            updatedCount: updatedDevices.length,
+            untrackedDevices,
+        };
+    }
+    async getAllDatabase() {
+        return await this.DeviceReposity.find();
     }
 };
 exports.DeviceService = DeviceService;

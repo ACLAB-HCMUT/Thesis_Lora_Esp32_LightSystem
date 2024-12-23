@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as awsIOT from 'aws-iot-device-sdk';
+import { DeviceService } from 'src/device/device.service';
 import { IOTGatewayService } from 'src/websocket/gateway.service';
 
 interface PayloadInterface {
@@ -15,6 +16,7 @@ export class EventService {
   constructor(
     @Inject(forwardRef(() => IOTGatewayService))
     private readonly IOTGateway: IOTGatewayService,
+    private readonly deviceService: DeviceService,
   ) {
     this.device = awsIOT.device({
       keyPath: 'src/certs/private.pem.key',
@@ -33,13 +35,21 @@ export class EventService {
         }
       });
     });
-    this.device.on('message', (topic: string, payload: PayloadInterface) => {
-      const payloadString = payload.toString();
-      const parsedPayload = JSON.parse(payloadString);
-      console.log(parsedPayload, 'check receive message');
-      // "message" is a namespace of socketIO
-      IOTGateway.sendIOTData('data', parsedPayload, 'message');
-    });
+    this.device.on(
+      'message',
+      async (topic: string, payload: PayloadInterface) => {
+        const payloadString = payload.toString();
+        const parsedPayload = JSON.parse(payloadString);
+        console.log(parsedPayload, 'check receive message');
+
+        // validate input message
+        const result = await this.deviceService.checkAndInsert(parsedPayload);
+        console.log('check result', result);
+        // "message" is a namespace of socketIO
+
+        IOTGateway.sendIOTData('data', result, 'message');
+      },
+    );
   }
   async publishToMQTT(topic: string, message: any): Promise<void> {
     const messageString =

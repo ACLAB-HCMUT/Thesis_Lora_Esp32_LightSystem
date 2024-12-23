@@ -20,10 +20,33 @@ __decorate([
 ], DeviceEntity.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'text',
+        type: 'varchar',
+        length: 255,
+        unique: true,
     }),
     __metadata("design:type", String)
 ], DeviceEntity.prototype, "device_id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        default: '0',
+    }),
+    __metadata("design:type", String)
+], DeviceEntity.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        default: '0',
+    }),
+    __metadata("design:type", String)
+], DeviceEntity.prototype, "sensor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'varchar',
+        default: '0',
+    }),
+    __metadata("design:type", String)
+], DeviceEntity.prototype, "timestamp", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: false,

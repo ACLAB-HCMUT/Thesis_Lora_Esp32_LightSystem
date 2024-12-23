@@ -17,7 +17,7 @@ export interface DangerProps {
   diff?: number;
   trend: "up" | "down";
   sx?: SxProps;
-  value: number;
+  value: [];
 }
 
 export function Danger({
@@ -45,7 +45,7 @@ export function Danger({
               <Typography color="secondary" variant="overline">
                 Danger Node
               </Typography>
-              <Typography variant="h4">{value}</Typography>
+              <Typography variant="h4">{value.length}</Typography>
             </Stack>
             <Avatar
               sx={{
@@ -64,7 +64,7 @@ export function Danger({
               variant="caption"
               sx={{ fontSize: "1rem" }}
             >
-              Total In Danger Node: <b>{value}</b>
+              Missing data from node: <b>{value.join(", ")}</b>
             </Typography>
           </Stack>
         </Stack>

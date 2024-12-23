@@ -1,18 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./ToggleButton.css";
 import { configAxios } from "../../config/axios";
-const ToggleButton = (props: { status: string; deviceID: string }) => {
-  const [isToggle, setToggle] = useState<boolean>(
-    props.status === "1" ? true : false
-  );
+
+const ToggleButton = (props: { status: boolean; deviceID: string }) => {
+  const [isToggle, setToggle] = useState<boolean>(props.status);
+
+  useEffect(() => {
+    // Ensure the state updates correctly when props.status changes
+    setToggle(props.status);
+  }, [props.status]);
+
   const handleToggleButton = async () => {
     const newToggleState = !isToggle;
     setToggle(newToggleState);
-    const response = await configAxios.post("/led/led_status", {
-      status: newToggleState ? "1" : "0",
-      device_id: props.deviceID,
-    });
+
+    try {
+      await configAxios.post("/led/led_status", {
+        status: newToggleState ? true : false,
+        device_id: props.deviceID,
+      });
+    } catch (error) {
+      console.error("Failed to update toggle status:", error);
+      setToggle(!newToggleState);
+    }
   };
+
   return (
     <>
       <button

@@ -8,9 +8,29 @@ export class DeviceEntity {
   id: string;
 
   @Column({
-    type: 'text',
+    type: 'varchar',
+    length: 255,
+    unique: true,
   })
   device_id: string;
+
+  @Column({
+    type: 'varchar',
+    default: '0',
+  })
+  status: string;
+
+  @Column({
+    type: 'varchar',
+    default: '0',
+  })
+  sensor: string;
+
+  @Column({
+    type: 'varchar',
+    default: '0',
+  })
+  timestamp: string;
 
   @Column({
     nullable: false,

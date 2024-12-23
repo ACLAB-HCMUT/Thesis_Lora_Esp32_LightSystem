@@ -16,6 +16,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import NewDevice from "./NewDevice/NewDevice";
 import { Check } from "@phosphor-icons/react";
+import { configAxios } from "../../config/axios";
+import { setRows } from "../../redux/slice/app/socketSlice";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -37,6 +39,15 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const Dashboard = (props: { disableCustomTheme?: boolean }) => {
   const dispatch = useDispatch();
   const rows = useSelector((state: RootState) => state.app.socket.rows);
+  console.log(rows, "check rows");
+  // For first time render dashboard
+  useEffect(() => {
+    const firstRender = async () => {
+      const result = await configAxios.get("device/get_all_database");
+      dispatch(setRows(result.data));
+    };
+    firstRender();
+  });
   useEffect(() => {
     const cleanupSocketListeners = setupSocketListeners(dispatch);
     return cleanupSocketListeners;
@@ -75,7 +86,7 @@ const Dashboard = (props: { disableCustomTheme?: boolean }) => {
                   </StyledTableCell>
                   <StyledTableCell align="center">
                     <ToggleButton
-                      status={row.status}
+                      status={!!parseInt(row.status)}
                       deviceID={row.device_id}
                     ></ToggleButton>
                   </StyledTableCell>

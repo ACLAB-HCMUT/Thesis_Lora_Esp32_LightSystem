@@ -10,12 +10,13 @@ exports.EventModule = void 0;
 const common_1 = require("@nestjs/common");
 const event_service_1 = require("./event.service");
 const gateway_module_1 = require("../websocket/gateway.module");
+const device_module_1 = require("../device/device.module");
 let EventModule = class EventModule {
 };
 exports.EventModule = EventModule;
 exports.EventModule = EventModule = __decorate([
     (0, common_1.Module)({
-        imports: [(0, common_1.forwardRef)(() => gateway_module_1.IOTGatewayModule)],
+        imports: [(0, common_1.forwardRef)(() => gateway_module_1.IOTGatewayModule), device_module_1.DeviceModule],
         providers: [event_service_1.EventService],
         exports: [event_service_1.EventService],
     })

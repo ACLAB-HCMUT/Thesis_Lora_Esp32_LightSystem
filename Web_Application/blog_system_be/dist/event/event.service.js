@@ -15,10 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventService = void 0;
 const common_1 = require("@nestjs/common");
 const awsIOT = require("aws-iot-device-sdk");
+const device_service_1 = require("../device/device.service");
 const gateway_service_1 = require("../websocket/gateway.service");
 let EventService = class EventService {
-    constructor(IOTGateway) {
+    constructor(IOTGateway, deviceService) {
         this.IOTGateway = IOTGateway;
+        this.deviceService = deviceService;
         this.device = awsIOT.device({
             keyPath: 'src/certs/private.pem.key',
             certPath: 'src/certs/certificate.pem.crt',
@@ -37,11 +39,13 @@ let EventService = class EventService {
                 }
             });
         });
-        this.device.on('message', (topic, payload) => {
+        this.device.on('message', async (topic, payload) => {
             const payloadString = payload.toString();
             const parsedPayload = JSON.parse(payloadString);
             console.log(parsedPayload, 'check receive message');
-            IOTGateway.sendIOTData('data', parsedPayload, 'message');
+            const result = await this.deviceService.checkAndInsert(parsedPayload);
+            console.log('check result', result);
+            IOTGateway.sendIOTData('data', result, 'message');
         });
     }
     async publishToMQTT(topic, message) {
@@ -64,6 +68,7 @@ exports.EventService = EventService;
 exports.EventService = EventService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)((0, common_1.forwardRef)(() => gateway_service_1.IOTGatewayService))),
-    __metadata("design:paramtypes", [gateway_service_1.IOTGatewayService])
+    __metadata("design:paramtypes", [gateway_service_1.IOTGatewayService,
+        device_service_1.DeviceService])
 ], EventService);
 //# sourceMappingURL=event.service.js.map

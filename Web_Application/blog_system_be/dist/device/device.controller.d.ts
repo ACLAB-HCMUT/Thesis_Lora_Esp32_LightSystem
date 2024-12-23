@@ -1,10 +1,11 @@
 import { DeviceService } from './device.service';
+import { DeviceEntity } from './device.entity';
 export declare class InsertDeviceDto {
     device_id: string;
 }
 export declare class CompareFormat {
-    array1: number[];
-    array2: number[];
+    db_arr: number[];
+    new_arr: number[];
 }
 export declare class DeviceController {
     private readonly deviceService;
@@ -15,6 +16,7 @@ export declare class DeviceController {
         message: string;
     }>;
     get_number_device(): Promise<number>;
-    compare_deviceID(body: CompareFormat): Promise<number[]>;
     get_list_of_exist_id(): Promise<number[]>;
+    get_all_database(): Promise<DeviceEntity[]>;
+    get_average_realtime_sensor(): Promise<any>;
 }

@@ -13,6 +13,7 @@ interface SocketState {
   totalNode: number;
   averageSensor: number;
   activeNode: number;
+  dangerNode: [];
 }
 
 const initialState: SocketState = {
@@ -20,6 +21,7 @@ const initialState: SocketState = {
   totalNode: 0,
   averageSensor: 0,
   activeNode: 0,
+  dangerNode: [],
 };
 
 const socketSlice = createSlice({
@@ -38,9 +40,17 @@ const socketSlice = createSlice({
     setActiveNode: (state, action: PayloadAction<number>) => {
       state.activeNode = action.payload;
     },
+    setDangerNode: (state, action: PayloadAction<[]>) => {
+      state.dangerNode = action.payload;
+    },
   },
 });
 
-export const { setRows, setTotalNode, setAverageSensor, setActiveNode } =
-  socketSlice.actions;
+export const {
+  setRows,
+  setTotalNode,
+  setAverageSensor,
+  setActiveNode,
+  setDangerNode,
+} = socketSlice.actions;
 export default socketSlice.reducer;
