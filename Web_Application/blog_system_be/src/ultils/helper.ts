@@ -40,9 +40,9 @@ export function paginateResponse(data, page, limit) {
   };
 }
 
-export const currentTime = () => {
+export const currentTime = (): string => {
   const vietnamTime = dayjs();
-  return vietnamTime.format('YYYY-MM-DD HH:mm:ss');
+  return vietnamTime.format('YYYY-MM-DD HH:mm:ss').toString();
 };
 
 export const activationTime = () => {

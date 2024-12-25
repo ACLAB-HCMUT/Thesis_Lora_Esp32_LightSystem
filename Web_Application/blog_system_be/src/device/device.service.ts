@@ -107,69 +107,103 @@ export class DeviceService {
 
   // Handle check db vs mqtt topic
   async checkAndInsert(devices: any): Promise<any> {
-    const missingDevices = [];
-    const updatedDevices = [];
+    try {
+      const missingDevices = [];
+      const updatedDevices = [];
 
-    // Extract all device_ids from the incoming data
+      // Log the type of devices to validate input
+      console.log('check type', typeof devices);
 
-    const incomingDeviceIds = devices.map((device) => device.device_id);
-    const incomingDeviceIds_format = devices.map((device) =>
-      parseInt(device.device_id, 10),
-    );
-    console.log('check incoming', incomingDeviceIds);
-
-    // Fetch all devices from the database
-    const allDevicesInDb = await this.getAllDeviceIdsAsNumbers();
-    const formated_allDeviceInDB = allDevicesInDb.map((device_id: number) =>
-      this.formatDeviceID(device_id),
-    );
-    // allDevicesInDb = allDevicesInDb.map((device_id: number) =>
-    //   this.formatDeviceID(device_id),
-    // );
-
-    console.log('check in database', formated_allDeviceInDB);
-    // Track devices in the database but not in the incoming data
-    const untrackedDevices = await this.getErrorDevice(
-      formated_allDeviceInDB,
-      incomingDeviceIds,
-    );
-    console.log('check in database but not in incoming', untrackedDevices);
-    // const format_untrackDevices = untrackedDevices.map((device_id: string) =>
-    //   this.formatDeviceID(device_id),
-    // );
-    // console.log('Error Device', format_untrackDevices);
-
-    // Process devices
-    for (const device of devices) {
-      const existingDevice = await this.DeviceReposity.findOne({
-        where: { device_id: device.device_id },
-      });
-
-      if (!existingDevice) {
-        // Track devices in the data but not in the database
-        missingDevices.push(device.device_id);
-      } else {
-        // Prepare device for update
-        existingDevice.status = device.status;
-        existingDevice.sensor = device.sensor;
-        existingDevice.timestamp = device.timestamp;
-
-        // Push the updated device for later processing
-        updatedDevices.push(existingDevice);
+      // Validate if devices is an array
+      if (!Array.isArray(devices)) {
+        throw new Error('Invalid input: devices must be an array');
       }
-    }
 
-    // Update devices in the database (bulk update)
-    if (updatedDevices.length > 0) {
-      await this.DeviceReposity.save(updatedDevices);
-    }
+      // Extract all device_ids from the incoming data
+      const incomingDeviceIds = devices.map((device) => device.device_id);
+      console.log('check incoming', incomingDeviceIds);
 
-    return {
-      message: 'Process completed',
-      missingDevices,
-      updatedCount: updatedDevices.length,
-      untrackedDevices,
-    };
+      // Fetch all devices from the database
+      const allDevicesInDb = await this.getAllDeviceIdsAsNumbers();
+      const formattedAllDevicesInDb = allDevicesInDb.map((device_id: number) =>
+        this.formatDeviceID(device_id),
+      );
+
+      console.log('check in database', formattedAllDevicesInDb);
+
+      // Track devices in the database but not in the incoming data
+      const untrackedDevices = await this.getErrorDevice(
+        formattedAllDevicesInDb,
+        incomingDeviceIds,
+      );
+      console.log('check in database but not in incoming', untrackedDevices);
+      if (untrackedDevices.length > 0) {
+        try {
+          for (const device of untrackedDevices) {
+            const deviceNeedUncheck = await this.DeviceReposity.findOne({
+              where: { device_id: device },
+            });
+            if (deviceNeedUncheck) {
+              deviceNeedUncheck.check = false;
+              await this.DeviceReposity.save(deviceNeedUncheck);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      // Process devices
+      for (const device of devices) {
+        try {
+          const existingDevice = await this.DeviceReposity.findOne({
+            where: { device_id: device.device_id },
+          });
+
+          if (!existingDevice) {
+            // Track devices in the data but not in the database
+            missingDevices.push(device.device_id);
+          } else {
+            // Prepare device for update
+            existingDevice.status = device.status === '01' ? true : false;
+            existingDevice.sensor = device.sensor;
+            existingDevice.timestamp = currentTime();
+            existingDevice.check = true;
+            // Push the updated device for later processing
+            updatedDevices.push(existingDevice);
+          }
+        } catch (error) {
+          console.error(
+            `Error processing device with ID ${device.device_id}:`,
+            error,
+          );
+          // Optionally, continue to process other devices
+        }
+      }
+
+      // Update devices in the database (bulk update)
+      if (updatedDevices.length > 0) {
+        try {
+          await this.DeviceReposity.save(updatedDevices);
+          console.log('Updated devices saved successfully.');
+        } catch (error) {
+          console.error('Error saving updated devices:', error);
+        }
+      }
+
+      return {
+        message: 'Process completed',
+        missingDevices,
+        updatedCount: updatedDevices.length,
+        untrackedDevices,
+      };
+    } catch (error) {
+      console.error('Error in checkAndInsert:', error);
+      // Return an error response but prevent the program from crashing
+      return {
+        message: 'Error occurred during processing',
+        error: error.message,
+      };
+    }
   }
 
   async getAllDatabase() {

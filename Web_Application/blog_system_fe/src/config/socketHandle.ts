@@ -10,24 +10,7 @@ import {
 import { Dispatch } from "redux";
 import { configAxios } from "./axios";
 
-interface RowData {
-  device_id: string;
-  status: string;
-  sensor: string;
-  timestamp: string;
-}
-
 export const setupSocketListeners = (dispatch: Dispatch) => {
-  const calculateAverageSensor = (rows: RowData[]): number => {
-    const total = rows.reduce((sum, row) => {
-      const sensorValue = parseFloat(row.sensor);
-      return isNaN(sensorValue) ? sum : sum + sensorValue;
-    }, 0);
-
-    const average = rows.length > 0 ? total / rows.length : 0;
-    return parseFloat(average.toFixed(2));
-  };
-
   socket.on("message", async (data) => {
     if (data.message) {
       try {
@@ -42,7 +25,6 @@ export const setupSocketListeners = (dispatch: Dispatch) => {
           dispatch(setDangerNode(data.message.untrackedDevices));
           const average_sensor = await configAxios.get("device/get_average");
           dispatch(setAverageSensor(parseInt(average_sensor.data)));
-          console.log("check point");
         }
       } catch (error) {
         console.error("Error parsing message:", error);
@@ -53,6 +35,7 @@ export const setupSocketListeners = (dispatch: Dispatch) => {
   });
 
   return () => {
+    console.log("Socket listener cleaned up");
     socket.off("message");
   };
 };

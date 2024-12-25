@@ -16,6 +16,7 @@ exports.LightControlController = void 0;
 const common_1 = require("@nestjs/common");
 const light_control_service_1 = require("./light_control.service");
 const light_control_dto_1 = require("./dto/light_control.dto");
+const publicRoute_1 = require("../decorator/publicRoute");
 let LightControlController = class LightControlController {
     constructor(lightcontrolservice) {
         this.lightcontrolservice = lightcontrolservice;
@@ -26,6 +27,7 @@ let LightControlController = class LightControlController {
 };
 exports.LightControlController = LightControlController;
 __decorate([
+    (0, publicRoute_1.Public)(),
     (0, common_1.Post)('led_status'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),

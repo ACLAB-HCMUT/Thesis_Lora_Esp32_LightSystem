@@ -15,7 +15,7 @@ import { setupSocketListeners } from "../../config/socketHandle";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import NewDevice from "./NewDevice/NewDevice";
-import { Check } from "@phosphor-icons/react";
+import { Check, WarningCircle } from "@phosphor-icons/react";
 import { configAxios } from "../../config/axios";
 import { setRows } from "../../redux/slice/app/socketSlice";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -47,10 +47,12 @@ const Dashboard = (props: { disableCustomTheme?: boolean }) => {
       dispatch(setRows(result.data));
     };
     firstRender();
-  });
+  }, []);
   useEffect(() => {
     const cleanupSocketListeners = setupSocketListeners(dispatch);
-    return cleanupSocketListeners;
+    return () => {
+      cleanupSocketListeners();
+    };
   }, [dispatch]);
 
   return (
@@ -86,13 +88,17 @@ const Dashboard = (props: { disableCustomTheme?: boolean }) => {
                   </StyledTableCell>
                   <StyledTableCell align="center">
                     <ToggleButton
-                      status={!!parseInt(row.status)}
+                      status={row.status}
                       deviceID={row.device_id}
                     ></ToggleButton>
                   </StyledTableCell>
                   <StyledTableCell align="center">{row.sensor}</StyledTableCell>
                   <StyledTableCell align="center">
-                    <Check></Check>
+                    {row.check ? (
+                      <Check></Check>
+                    ) : (
+                      <WarningCircle></WarningCircle>
+                    )}
                   </StyledTableCell>
                 </StyledTableRow>
               ))}

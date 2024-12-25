@@ -3,9 +3,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface RowData {
   device_id: string;
-  status: string;
+  status: boolean;
   sensor: string;
   timestamp: string;
+  check: boolean;
 }
 
 interface SocketState {
@@ -29,6 +30,7 @@ const socketSlice = createSlice({
   initialState,
   reducers: {
     setRows: (state, action: PayloadAction<RowData[]>) => {
+      console.log("setRows called with:", action.payload);
       state.rows = action.payload;
     },
     setTotalNode: (state, action: PayloadAction<number>) => {
@@ -43,6 +45,16 @@ const socketSlice = createSlice({
     setDangerNode: (state, action: PayloadAction<[]>) => {
       state.dangerNode = action.payload;
     },
+    updateDeviceStatus: (
+      state,
+      action: PayloadAction<{ device_id: string; status: boolean }>
+    ) => {
+      const { device_id, status } = action.payload;
+      const row = state.rows.find((row) => row.device_id === device_id);
+      if (row) {
+        row.status = status ? true : false;
+      }
+    },
   },
 });
 
@@ -52,5 +64,6 @@ export const {
   setAverageSensor,
   setActiveNode,
   setDangerNode,
+  updateDeviceStatus,
 } = socketSlice.actions;
 export default socketSlice.reducer;

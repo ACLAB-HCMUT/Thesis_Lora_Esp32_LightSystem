@@ -44,7 +44,7 @@ function paginateResponse(data, page, limit) {
 }
 const currentTime = () => {
     const vietnamTime = dayjs();
-    return vietnamTime.format('YYYY-MM-DD HH:mm:ss');
+    return vietnamTime.format('YYYY-MM-DD HH:mm:ss').toString();
 };
 exports.currentTime = currentTime;
 const activationTime = () => {

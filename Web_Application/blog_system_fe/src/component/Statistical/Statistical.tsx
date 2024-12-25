@@ -89,9 +89,6 @@ export const Statistical = (props: { disableCustomTheme?: boolean }) => {
   const averageSensor = useSelector(
     (state: RootState) => state.app.socket.averageSensor
   );
-  const activeNode = useSelector(
-    (state: RootState) => state.app.socket.activeNode
-  );
 
   const dangerNode = useSelector(
     (state: RootState) => state.app.socket.dangerNode
@@ -156,7 +153,7 @@ export const Statistical = (props: { disableCustomTheme?: boolean }) => {
               diff={12}
               trend="up"
               sx={{ height: "100%" }}
-              value={dangerNode}
+              value={dangerNode ? dangerNode : []}
             />
           </Grid>
 

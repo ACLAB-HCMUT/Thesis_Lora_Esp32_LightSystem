@@ -15,16 +15,22 @@ export class DeviceEntity {
   device_id: string;
 
   @Column({
-    type: 'varchar',
-    default: '0',
+    type: 'boolean',
+    default: false,
   })
-  status: string;
+  status: boolean;
 
   @Column({
     type: 'varchar',
     default: '0',
   })
   sensor: string;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  check: boolean;
 
   @Column({
     type: 'varchar',

@@ -41,6 +41,7 @@ let EventService = class EventService {
         });
         this.device.on('message', async (topic, payload) => {
             const payloadString = payload.toString();
+            console.log(payloadString);
             const parsedPayload = JSON.parse(payloadString);
             console.log(parsedPayload, 'check receive message');
             const result = await this.deviceService.checkAndInsert(parsedPayload);

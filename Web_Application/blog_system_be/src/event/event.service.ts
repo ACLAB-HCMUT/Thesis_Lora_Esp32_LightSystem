@@ -39,6 +39,7 @@ export class EventService {
       'message',
       async (topic: string, payload: PayloadInterface) => {
         const payloadString = payload.toString();
+        console.log(payloadString);
         const parsedPayload = JSON.parse(payloadString);
         console.log(parsedPayload, 'check receive message');
 

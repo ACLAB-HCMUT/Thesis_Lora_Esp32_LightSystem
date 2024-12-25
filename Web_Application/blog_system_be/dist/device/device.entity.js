@@ -28,10 +28,10 @@ __decorate([
 ], DeviceEntity.prototype, "device_id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        type: 'varchar',
-        default: '0',
+        type: 'boolean',
+        default: false,
     }),
-    __metadata("design:type", String)
+    __metadata("design:type", Boolean)
 ], DeviceEntity.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.Column)({
@@ -40,6 +40,13 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], DeviceEntity.prototype, "sensor", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'boolean',
+        default: false,
+    }),
+    __metadata("design:type", Boolean)
+], DeviceEntity.prototype, "check", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'varchar',
