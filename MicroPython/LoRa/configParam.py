@@ -1,6 +1,6 @@
 def getConfig():
     return {
-        'address': '0010',
+        'address': '0001',
         'UART_rate': '9600',
         'parity_bit': '0',
         'air_rate': '9600',
