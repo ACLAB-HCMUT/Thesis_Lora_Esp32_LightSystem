@@ -41,16 +41,14 @@ def mqtt_subscribe(topic, msg):
     print(topic, message)
     print("Done")
 
-def format_package_send_server(src_address,status,sensor_light):
-    package = []
+def format_package_send_server(src_address:str, status:str, sensor_light:str):
     sub_package = ujson.dumps({
         "device_id": src_address,
         "status": status,
         "sensor": sensor_light,
         "timestamp": "test"
     })
-    package.insert(sub_package)
-    return package
+    return [sub_package]
 
 
 def get_mqtt():

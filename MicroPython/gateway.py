@@ -8,6 +8,9 @@ from config_aws import *
 import random
 topic_sub = "esp32_thing/light"
 broadcast_address = bytes(b'\xff\xff')
+gateway_buffer = []
+TIMEOUT_RCV = 1000  # 1000 ms
+
 def generate_random_string():
     # Generate a random number between 0 and 99
     random_number = random.randint(0, 99)
@@ -15,16 +18,18 @@ def generate_random_string():
     return f"00{random_number:02d}"
 
 def ping_callback(timer):
-    global lora
+    global lora, wait_msg
     ping_package = ping_pack("ffff")
     lora.send_raw_msg(ping_package,"ffff")
-
+    wait_msg = 4
+    
 def uart_callback(timer):
-    global lora, mqtt_client
+    global lora, mqtt_client, gateway_buffer
     if lora.UART_1.any():
         # msg = binascii.hexlify(lora.UART_1.read())
         msg = (lora.UART_1.read())
         appendMessage(msg)
+        
         if isMessageArrived():
             msg = processMessage()
             msg_id = msg[0:1]
@@ -35,10 +40,21 @@ def uart_callback(timer):
                 src = src[src.find('\'') + 1: src.rfind('\'')]
                 print(f"Source address: {src}")
                 print(f"Destination address: {status_msg.getDestinationAddress()}")
-            payload = format_package_send_server(src, status_msg.getLightState(), str(status_msg.brightness_sensor_value[0]))
-            print(payload, "check point")
-            mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=payload)
+                payload = format_package_send_server(src, status_msg.getLightState(), str(status_msg.brightness_sensor_value[0]))
+                print(payload, "check point")
+                gateway_buffer += payload
+                # mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=payload)
 
+    pass
+
+def publish_message():
+    global mqtt_client, gateway_buffer
+    print(f"length of buffer = {len(gateway_buffer)}")
+    print(gateway_buffer)
+    if len(gateway_buffer) > 0:
+        # Publish to mqtt
+        mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=str(gateway_buffer).replace('\'', ''))
+        gateway_buffer = []
     pass
 
 def mqtt_subscribe(topic, msg):
@@ -48,13 +64,18 @@ def mqtt_subscribe(topic, msg):
     print("Done")
 
 def loop():
-    global lora
+    global lora, wait_msg
     while True:
         mqtt_client.check_msg()
-        time.sleep(1)
+        if wait_msg > 0:
+            wait_msg -= 1
+        elif wait_msg == 0:
+            publish_message()
+            wait_msg -= 1
+        time.sleep(0.5)
     
 def setup():
-    global lora, timer0, timer1, mqtt_client
+    global lora, timer0, timer1, mqtt_client, wait_msg
     init_message_buffer()
     print("hello from LoRa")
     # Create LoRa instance
@@ -73,6 +94,9 @@ def setup():
     # Timer for Gateway to ping Node
     timer1 = Timer(1)
     timer1.init(freq=0.2, mode=Timer.PERIODIC, callback=ping_callback)
+    
+    # Initial time to wait message
+    wait_msg = -1
     
 def main():
     setup_config()
