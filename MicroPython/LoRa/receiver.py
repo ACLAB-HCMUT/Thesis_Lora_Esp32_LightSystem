@@ -14,6 +14,7 @@ def uart_callback(timer):
     if lora.UART_1.any():
         msg = lora.UART_1.read()
         appendMessage(msg)
+        print(f"Received message: {msg}")
         if LoRa.DEBUG:
             print(f"Received message: {msg}")
 

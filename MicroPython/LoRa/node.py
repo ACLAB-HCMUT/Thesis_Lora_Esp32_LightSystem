@@ -2,7 +2,6 @@ import LoRa
 from message import *
 import softwareTimer
 import led
-
 from machine import Timer
 import time
 import binascii
@@ -14,6 +13,7 @@ def uart_callback(timer):
     global lora, msg_buffer, have_msg
     if lora.UART_1.any():
         msg = lora.UART_1.read()
+        print(msg)
         appendMessage(msg)
         if LoRa.DEBUG:
             print(f"Received message: {msg}")
@@ -37,11 +37,11 @@ def loop():
                 ping_msg = ping_unpack(msg)
                 print(f"Source address: {ping_msg.getSourceAddress()}")
                 print(f"Destination address: {ping_msg.des_addr}")
-                sensor_value = random.randint(0, 100).to_bytes(2, "big")
-                if state == LED_ON:
-                    state = LED_OFF
-                else:
+                sensor_value = random.randint(0, 100).to_bytes(1, "big")
+                if led.isLedOn():
                     state = LED_ON
+                else:
+                    state = LED_OFF
                 status_msg = status_pack(GTW_ADDRESS, state, sensor_value)
                 lora.send_raw_msg(status_msg, address_decode(GTW_ADDRESS))
                 

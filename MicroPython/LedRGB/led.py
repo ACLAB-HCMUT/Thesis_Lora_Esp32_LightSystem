@@ -65,6 +65,10 @@ def cyan():
     led[0] = (0, 25, 25)
     led.write()
 
+def isLedOn():
+    global led
+    return led[0] != (0,0,0)
+
 def init():
     global led
     pin = Pin(LED_PIN, Pin.OUT)

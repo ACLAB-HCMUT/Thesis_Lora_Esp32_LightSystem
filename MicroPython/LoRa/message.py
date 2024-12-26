@@ -28,7 +28,7 @@ MESSAGE_STATUS_LENGTH = bytes(b'\x06')
 
 # Define start byte and stop byte
 START_BYTE = bytes(b'\x80')
-STOP_BYTE = bytes(b'\xff')
+STOP_BYTE = bytes(b'\xfe')
 
 # Define object ID dictionary
 object_dict = {

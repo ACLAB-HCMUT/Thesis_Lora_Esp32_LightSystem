@@ -22,9 +22,9 @@ def loop():
     global lora
     state = LED_OFF
     while True:
-        # if softwareTimer.getFlag(0):
-        #     msg = ping_pack(address_encode(lora.address), address_encode('ffff'))
-        #     lora.send_raw_msg(msg, 'ffff', 1)
+        if softwareTimer.getFlag(0):
+            # msg = ping_pack(address_encode(lora.address), address_encode('ffff'))
+            lora.send_raw_msg(b'\x00\x01\xff\xff', 'ffff', 1)
         if isMessageArrived():
             msg = processMessage()
             msg_id = msg[0:1]

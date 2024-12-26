@@ -18,16 +18,31 @@ topic_pub = "esp32_thing/ping"
 topic_sub = "esp32_thing/light"
 
 
-def mqtt_connect(client=client_id, endpoint=aws_endpoint, sslp=None):
-    try:
-        mqtt = MQTTClient(client_id=client, server=endpoint, port=8883, keepalive=1200, ssl=True, ssl_params=sslp)
-        print("Connecting to AWS IoT...")
-        mqtt.connect()
-        print("Done")
-        return mqtt
-    except Exception as e:
-        print(f"Error connecting to AWS IoT: {e}")
-        return None
+# def mqtt_connect(client=client_id, endpoint=aws_endpoint, sslp=None):
+#     try:
+#         mqtt = MQTTClient(client_id=client, server=endpoint, port=8883, keepalive=1200, ssl=True, ssl_params=sslp)
+#         print("Connecting to AWS IoT...")
+#         mqtt.connect()
+#         print("Done")
+#         return mqtt
+#     except Exception as e:
+#         print(f"Error connecting to AWS IoT: {e}")
+#         return None
+
+def mqtt_connect(client=client_id, endpoint=aws_endpoint, sslp=None, retries=3):
+    for attempt in range(retries):
+        try:
+            mqtt = MQTTClient(client_id=client, server=endpoint, port=8883, keepalive=1200, ssl=True, ssl_params=sslp)
+            print(f"Attempting to connect to AWS IoT... (Attempt {attempt + 1})")
+            mqtt.connect()
+            print("MQTT connected successfully!")
+            return mqtt
+        except Exception as e:
+            print(f"MQTT connection failed: {e}")
+            time.sleep(5)  
+    print("Exceeded maximum connection attempts. MQTT not connected.")
+    return None
+
 
 # client = mqtt
 def mqtt_publish(client, topic=topic_pub, message=''):
@@ -54,6 +69,17 @@ def format_package_send_server(src_address:str, status:str, sensor_light:str):
 def get_mqtt():
     global mqtt
     return mqtt
+
+def get_ssl_params():
+    with open(private_key, 'rb') as f:
+        key = f.read()
+    with open(private_cert, 'rb') as f:
+        cert = f.read()
+    with open(ca_key, 'rb') as f:
+        ca = f.read()
+    # Make an object
+    ssl_params = {"key":key, "cert":cert, "server_side":False, "cadata": ca}
+    return ssl_params
 
 def setup_config():
     global mqtt

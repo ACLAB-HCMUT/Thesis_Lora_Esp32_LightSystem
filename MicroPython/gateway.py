@@ -19,7 +19,7 @@ def generate_random_string():
 
 def ping_callback(timer):
     global lora, wait_msg
-    ping_package = ping_pack("ffff")
+    ping_package = ping_pack(b'\xff\xff')
     lora.send_raw_msg(ping_package,"ffff")
     wait_msg = 4
     
@@ -38,8 +38,10 @@ def uart_callback(timer):
                 status_msg = status_unpack(msg)
                 src = str(binascii.hexlify(status_msg.src_addr))
                 src = src[src.find('\'') + 1: src.rfind('\'')]
+                print(msg)
                 print(f"Source address: {src}")
                 print(f"Destination address: {status_msg.getDestinationAddress()}")
+                print(status_msg.brightness_sensor_value, "sensor")
                 payload = format_package_send_server(src, status_msg.getLightState(), str(status_msg.brightness_sensor_value[0]))
                 print(payload, "check point")
                 gateway_buffer += payload
@@ -48,25 +50,46 @@ def uart_callback(timer):
     pass
 
 def publish_message():
-    global mqtt_client, gateway_buffer
+    global mqtt_client, gateway_buffer, ssl_params
     print(f"length of buffer = {len(gateway_buffer)}")
     print(gateway_buffer)
     if len(gateway_buffer) > 0:
         # Publish to mqtt
-        mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=str(gateway_buffer).replace('\'', ''))
-        gateway_buffer = []
-    pass
+        try:
+            mqtt_publish(client=mqtt_client,topic="esp32_thing/ping",message=str(gateway_buffer).replace('\'', ''))
+            gateway_buffer = []
+        except Exception as e:
+            ssl_params = get_ssl_params()
+            print(ssl_params)
+            print(e)
+            mqtt_client = mqtt_connect(sslp=ssl_params)
+
 
 def mqtt_subscribe(topic, msg):
+    global lora
     print("Message received...")
     message = ujson.loads(msg)
-    print(topic, message)
+    print(message)
+    temp = []
+    # ujson.dump(message, temp)
+    # print(type(message))
+    print(message["status"])
+    print(message["device_id"])
+    # status: bytes , device_id: bytes
+    status = address_encode(message["status"])
+    device_id = address_encode(message["device_id"])
+    control_message = control_pack(device_id,LED_ID,status)
+    lora.send_raw_msg(control_message,message["device_id"])
     print("Done")
 
 def loop():
-    global lora, wait_msg
+    global lora, wait_msg, mqtt_client, ssl_params
     while True:
-        mqtt_client.check_msg()
+        try: 
+            mqtt_client.check_msg()
+        except Exception as e: 
+            print(f"MQTT check_msg failed: {e}. Reconnecting MQTT...")
+            mqtt_client = mqtt_connect(sslp=ssl_params)
         if wait_msg > 0:
             wait_msg -= 1
         elif wait_msg == 0:
