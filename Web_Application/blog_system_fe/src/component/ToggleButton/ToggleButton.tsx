@@ -17,15 +17,15 @@ const ToggleButton = (props: { status: boolean; deviceID: string }) => {
 
     try {
       await configAxios.post("/led/led_status", {
-        status: newToggleState ? true : false,
+        status: newToggleState ? "01" : "00",
         device_id: props.deviceID,
       });
-      dispatch(
-        updateDeviceStatus({
-          device_id: props.deviceID,
-          status: newToggleState,
-        })
-      );
+      // dispatch(
+      //   updateDeviceStatus({
+      //     device_id: props.deviceID,
+      //     status: newToggleState,
+      //   })
+      // );
     } catch (error) {
       console.error("Failed to update toggle status:", error);
       setToggle(!newToggleState);
